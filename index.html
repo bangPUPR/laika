@@ -15,6 +15,12 @@
     <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <!-- Chart.js for graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for XLSX export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Google & OneDrive Picker APIs -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://js.live.net/v7.2/OneDrive.js"></script>
+
 
     <style>
         body {
@@ -128,11 +134,28 @@
             opacity: 1;
             transform: translateY(0);
         }
+        #toast-notification.error {
+            background-color: #ef4444; /* Red for errors */
+        }
+        .file-preview-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 0.375rem;
+            border: 1px solid #e2e8f0;
+        }
+        .bab-generated {
+            background-color: #16a34a !important; /* Green color */
+            border-color: #15803d !important;
+        }
+        .bab-generated:hover {
+            background-color: #15803d !important;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100">
 
-    <div id="toast-notification">Pengaturan berhasil disimpan!</div>
+    <div id="toast-notification"></div>
 
     <div class="flex flex-col md:flex-row min-h-screen">
         <!-- Sidebar Navigation -->
@@ -146,21 +169,21 @@
             </nav>
             <div class="p-4 space-y-2 border-t border-gray-200/80">
                  <button id="summary-btn" class="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-violet-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
-                    ✨ Buat Ringkasan
-                </button>
-                <button id="save-pdf-btn" class="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-red-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
-                    Simpan PDF
-                </button>
-                <button id="save-docx-btn" class="w-full bg-gradient-to-r from-blue-500 to-sky-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
-                    Simpan DOCX
-                </button>
-                <button id="export-btn" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
-                    Ekspor Data (JSON)
-                </button>
+                      ✨ Buat Ringkasan
+                 </button>
+                 <button id="save-pdf-btn" class="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-red-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
+                      Simpan PDF
+                 </button>
+                 <button id="save-docx-btn" class="w-full bg-gradient-to-r from-blue-500 to-sky-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
+                      Simpan DOCX
+                 </button>
+                 <button id="export-btn" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
+                      Ekspor Data (JSON)
+                 </button>
                  <button id="import-btn" class="w-full bg-gradient-to-r from-gray-500 to-slate-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-gray-600 hover:to-slate-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
-                    Impor Data (JSON)
-                </button>
-                <input type="file" id="import-file" class="hidden" accept=".json">
+                      Impor Data (JSON)
+                 </button>
+                 <input type="file" id="import-file" class="hidden" accept=".json">
             </div>
         </aside>
 
@@ -262,7 +285,7 @@
                 description: "Pemeriksaan kelengkapan dan kesesuaian dokumen administratif bangunan gedung.",
                 type: 'checklist',
                 items: [
-                    { id: 'adm-1', name: 'Izin Mendirikan Bangunan (IMB) / Persetujuan Bangunan Gedung (PBG)', standard: 'Memeriksa keberadaan dan kesesuaian data IMB/PBG dengan kondisi fisik bangunan.' },
+                    { id: 'adm-1', name: 'Izin Mendirikan Bangunan (IMB) / Persetujuan Bangunan Gedung (PBG)', standard: 'Memeriksa keberadaan dan kesesuaian data IMB/PBG dengan kondisi fisik bangunan, serta kelengkapan dokumen-dokumen rekomendasi dari dinas/instansi terkait lainnya.' },
                     { id: 'adm-2', name: 'As-Built Drawings (Gambar Terbangun)', standard: 'Memeriksa ketersediaan dan kesesuaian gambar terbangun dengan kondisi aktual di lapangan.' },
                     { id: 'adm-3', name: 'Dokumen Kepemilikan Tanah', standard: 'Memastikan status hukum kepemilikan tanah tempat bangunan berdiri sudah jelas dan sah.' },
                 ]
@@ -273,8 +296,12 @@
                 type: 'checklist',
                 items: [
                     { id: 'tb-1', name: 'Fungsi Bangunan Gedung', standard: 'Memeriksa kesesuaian fungsi bangunan eksisting dengan fungsi yang tercantum dalam IMB/PBG dan peraturan zonasi wilayah.' },
+                    { id: 'tb-2', name: 'Pemanfaatan Setiap Ruang Dalam Bangunan Gedung', standard: 'Mengkaji kesesuaian pemanfaatan setiap ruang dengan fungsi yang ditetapkan dalam IMB/PBG.' },
+                    { id: 'tb-3', name: 'Pemanfaatan Ruang Luar Pada Persil Bangunan Gedung', standard: 'Mengkaji pemanfaatan ruang di luar bangunan, seperti area parkir, taman, dan sirkulasi, sesuai dengan rencana tapak.' },
                     { id: 'tb-4', name: 'Intensitas: KDB & Luas Lantai Dasar', standard: 'Memeriksa Koefisien Dasar Bangunan (KDB) dan Luas Lantai Dasar, termasuk basemen, terhadap peraturan intensitas bangunan.' },
                     { id: 'tb-5', name: 'Intensitas: KLB & Luas Total Lantai', standard: 'Memeriksa Koefisien Lantai Bangunan (KLB) dan Luas Total Lantai terhadap peraturan intensitas bangunan.' },
+                    { id: 'tb-6', name: 'Luas Daerah Hijau Dalam Persil', standard: 'Memeriksa Koefisien Daerah Hijau (KDH) terhadap peraturan yang berlaku untuk memastikan luas area hijau memadai.' },
+                    { id: 'tb-7', name: 'Jarak Antar Bangunan', standard: 'Memeriksa jarak antar bangunan dalam satu persil atau dengan bangunan di persil tetangga sesuai peraturan keselamatan kebakaran dan privasi.' },
                     { id: 'tb-8', name: 'Jarak: Garis Sempadan & Batas Persil', standard: 'Memeriksa jarak bebas bangunan (Garis Sempadan Jalan, Sungai, dll.) dan jarak dengan batas persil lainnya.' },
                 ]
             },
@@ -359,9 +386,14 @@
                     { id: 'ksl-12', name: 'Jalur Evakuasi (Means of Egress)', standard: 'Memeriksa seluruh komponen jalur evakuasi secara terintegrasi, memastikan bebas hambatan, aman, dan jelas.' },
                 ]
             },
+            daftar_simak: {
+                title: "Daftar Simak",
+                description: "Ringkasan pemeriksaan dari semua aspek dalam format daftar simak terpadu.",
+                type: 'summary_checklist'
+            },
             laporan_komprehensif: {
-                title: "Generate Laporan",
-                description: "Menyusun semua data kajian menjadi Laporan Teknis Komprehensif yang dapat disunting dan diunduh.",
+                title: "Laporan & Temuan",
+                description: "Menyusun Laporan Teknis Komprehensif dan Daftar Temuan yang dapat disunting dan diunduh.",
                 type: 'report_generator'
             },
             pengaturan: {
@@ -374,22 +406,49 @@
         // --- CORE APPLICATION LOGIC ---
         let activeCategory = 'data_bangunan';
         const LS_KEY = 'slfKajianData';
+        let activeCharts = {}; 
+        let saveStateTimeout; 
+        let googleAccessToken = null;
+
+        // --- UTILITY: TOAST NOTIFICATION ---
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast-notification');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.className = ''; // Clear existing classes before showing
+            toast.classList.add('show');
+            if (isError) {
+                toast.classList.add('error');
+            }
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000); // 4 seconds
+        }
         
-        let appState = {
+        // Default application state structure
+        const getDefaultState = () => ({
             buildingInfo: {},
             checklistState: {},
             geminiResults: {},
             legalBasisCustom: [],
+            denahAnalysisResult: null, 
+            daftarTemuanResult: null, // To store the generated findings table data
+            daftarSimakState: {}, // To store Daftar Simak specific data
             settings: {
                 apiProvider: 'gemini',
                 apiModelName: 'gemini-2.5-flash-preview-05-20',
-                apiKey: 'AIzaSyAJFqz8TR-BStspMH2yyxNsfztlq9C_d-Q',
+                apiKey: '', // IMPORTANT: For security, leave API key blank by default.
                 companyLogo: '',
                 coverImage: '',
                 reportHeader: '',
-                reportFooter: ''
+                reportFooter: '',
+                googleApiKey: '',
+                googleClientId: '',
+                oneDriveClientId: '',
             }
-        };
+        });
+
+        let appState = getDefaultState();
 
         const sidebarNav = document.getElementById('sidebar-nav');
         const categoryTitle = document.getElementById('category-title');
@@ -406,25 +465,60 @@
         const saveDocxBtn = document.getElementById('save-docx-btn');
 
 
-        // --- State Management (Local Storage) ---
+        // --- State Management (Local Storage & File) ---
         function saveState() {
-            // FIX: This function now saves the entire appState object directly.
-            localStorage.setItem(LS_KEY, JSON.stringify(appState));
+            try {
+                localStorage.setItem(LS_KEY, JSON.stringify(appState));
+                 console.log("State saved.");
+            } catch (error) {
+                console.error("Error saving state to localStorage:", error);
+            }
+        }
+        
+        function debouncedSaveState() {
+            clearTimeout(saveStateTimeout);
+            saveStateTimeout = setTimeout(saveState, 500); // Simpan setelah 500ms tidak ada input
         }
 
-        function loadState() {
-            const savedState = localStorage.getItem(LS_KEY);
-            if (savedState) {
-                const loaded = JSON.parse(savedState);
-                // Merge loaded state with default to prevent missing keys on update
-                appState = { ...appState, ...loaded };
-                if (!appState.settings) appState.settings = { apiProvider: 'gemini', apiModelName: 'gemini-2.5-flash-preview-05-20', apiKey: '', companyLogo: '', coverImage: '', reportHeader: '', reportFooter: '' };
+        function loadState(stateObject = null) {
+            let loadedState = null;
+            if (stateObject) {
+                loadedState = stateObject;
+            } else {
+                const savedState = localStorage.getItem(LS_KEY);
+                if (savedState) {
+                    try {
+                        loadedState = JSON.parse(savedState);
+                    } catch (error) {
+                        console.error("Error parsing state from localStorage:", error);
+                        appState = getDefaultState();
+                        return;
+                    }
+                }
+            }
+
+            if (loadedState) {
+                const defaultState = getDefaultState();
+                appState = {
+                    ...defaultState,
+                    ...loadedState,
+                    settings: {
+                        ...defaultState.settings,
+                        ...(loadedState.settings || {})
+                    }
+                };
+            } else {
+                appState = getDefaultState();
             }
         }
 
         // --- Multi-API Integration ---
         async function callAI(prompt, files = []) {
             const { apiProvider, apiModelName, apiKey } = appState.settings;
+
+            if (!apiKey && apiProvider !== 'gemini') {
+                 return `Harap masukkan API Key untuk penyedia '${apiProvider}' di menu Pengaturan.`;
+            }
 
             if (apiProvider !== 'gemini' && files.length > 0) {
                 return "Maaf, analisis file/gambar saat ini hanya didukung oleh penyedia AI Gemini. Silakan ubah pengaturan atau hapus file untuk melanjutkan.";
@@ -450,8 +544,11 @@
                      break;
                 case 'gemini':
                 default:
-                    const model = apiModelName || 'gemini-2.5-flash-preview-05-20';
-                    apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey || ""}`;
+                    const isKeyless = !apiKey || apiKey.trim() === '';
+                    const model = isKeyless ? 'gemini-2.5-flash-preview-05-20' : (apiModelName || 'gemini-2.5-flash-preview-05-20');
+                    
+                    const geminiApiKey = apiKey || ""; 
+                    apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
                     headers = { 'Content-Type': 'application/json' };
                     const parts = [{ text: prompt }];
                     if (files && files.length > 0) {
@@ -477,42 +574,137 @@
                         return result.content[0].text;
                     case 'gemini':
                     default:
-                        return result.candidates[0].content.parts[0].text;
+                        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+                            return result.candidates[0].content.parts[0].text;
+                        } else {
+                            console.warn("Unexpected Gemini response structure:", result);
+                            if (result.candidates && result.candidates[0].finishReason === "STOP" && !result.candidates[0].content) {
+                                return "AI memberikan respons kosong. Ini mungkin karena filter keamanan atau permintaan yang tidak jelas.";
+                            }
+                            throw new Error("Struktur respons dari Gemini tidak valid atau tidak berisi teks.");
+                        }
                 }
             } catch (error) {
                 console.error(`Error calling ${apiProvider} API:`, error);
-                return `Terjadi kesalahan saat menghubungi AI (${apiProvider}): ${error.message}`;
+                throw new Error(`Terjadi kesalahan saat menghubungi AI (${apiProvider}): ${error.message}`);
             }
         }
 
         function renderNav() {
             sidebarNav.innerHTML = Object.keys(appData).map(key => `
-                <a href="#" data-category="${key}" class="nav-link ${key === activeCategory ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'} block w-full text-left px-4 py-2.5 rounded-md font-medium transition-colors text-sm">
+                <a href="#" data-category="${key}" class="nav-link ${key === activeCategory ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'} block w-full text-left px-4 py-2.5 rounded-md font-medium transition-colors text-sm">
                     ${appData[key].title}
                 </a>
             `).join('');
         }
+        
+        const contentRenderers = {
+            'form': renderDataBangunanForm,
+            'legal_basis': renderDasarHukum,
+            'report_generator': renderLaporanKomprehensif,
+            'settings': renderPengaturan,
+            'checklist': renderChecklist,
+            'summary_checklist': renderDaftarSimak,
+        };
 
         function renderContent() {
+            Object.values(activeCharts).forEach(chart => chart.destroy());
+            activeCharts = {};
+
             const category = appData[activeCategory];
+            if (!category) {
+                console.error(`Category '${activeCategory}' not found in appData.`);
+                activeCategory = 'data_bangunan'; // Fallback to default
+                renderNav();
+                renderContent();
+                return;
+            }
+
             categoryTitle.textContent = category.title;
             categoryDescription.textContent = category.description;
             
-            if (category.type === 'form') {
-                renderDataBangunanForm(category);
-            } else if (category.type === 'legal_basis') {
-                renderDasarHukum(category);
-            } else if (category.type === 'report_generator') {
-                renderLaporanKomprehensif();
-            } else if (category.type === 'settings') {
-                renderPengaturan();
+            contentContainer.innerHTML = ''; // Clear previous content
+
+            const renderer = contentRenderers[category.type] || contentRenderers['checklist'];
+            renderer(category);
+        }
+
+        function createFilePreview(file) {
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'inline-flex items-center gap-2 bg-slate-100 p-1 rounded-md';
+            
+            const previewImage = document.createElement('img');
+            previewImage.className = 'file-preview-thumbnail';
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             } else {
-                renderChecklist(category);
+                previewImage.src = 'https://placehold.co/60x60/e2e8f0/475569?text=FILE'; // Placeholder for non-image files
             }
+
+            const fileName = document.createElement('span');
+            fileName.className = 'text-xs text-slate-600';
+            fileName.textContent = file.name;
+
+            previewContainer.appendChild(previewImage);
+            previewContainer.appendChild(fileName);
+            return previewContainer;
+        }
+
+
+        function renderDenahAnalysisResult(data) {
+            if (!data) return;
+
+            const tableBody = document.getElementById('denah-table-body');
+            const resultContainer = document.getElementById('denah-result-container');
+            const exportButton = document.getElementById('export-denah-xlsx-btn');
+
+            if (!tableBody || !resultContainer || !exportButton) return;
+
+            tableBody.innerHTML = ''; // Clear previous results
+
+            if (data.rincian_luas) {
+                data.rincian_luas.forEach(ruang => {
+                    const row = `<tr>
+                        <td class="px-4 py-3 text-sm text-slate-700">${ruang.massa || 'Utama'}</td>
+                        <td class="px-4 py-3 text-sm text-slate-700">${ruang.lantai || 'N/A'}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-slate-900">${ruang.nama_ruang}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600"><code>${ruang.perhitungan}</code></td>
+                        <td class="px-4 py-3 text-sm text-slate-700 text-right">${parseFloat(ruang.luas_m2).toFixed(2)}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            }
+
+            if (data.total_luas_lantai) {
+                data.total_luas_lantai.forEach(total => {
+                     const totalRow = `<tr class="bg-slate-100 font-bold">
+                         <td class="px-4 py-3 text-sm text-slate-800" colspan="4">Total Luas ${total.massa || ''} - ${total.lantai || ''}</td>
+                         <td class="px-4 py-3 text-sm text-slate-800 text-right">${parseFloat(total.total_luas_m2).toFixed(2)}</td>
+                    </tr>`;
+                    tableBody.innerHTML += totalRow;
+                });
+            }
+            
+            if (data.grand_total_luas_m2) {
+                const grandTotalRow = `<tr class="bg-indigo-100 font-bold text-indigo-800">
+                    <td class="px-4 py-3 text-sm" colspan="4">GRAND TOTAL LUAS BANGUNAN</td>
+                    <td class="px-4 py-3 text-sm text-right">${parseFloat(data.grand_total_luas_m2).toFixed(2)}</td>
+                </tr>`;
+                tableBody.innerHTML += grandTotalRow;
+            }
+
+            resultContainer.classList.remove('hidden');
+            exportButton.classList.remove('hidden');
         }
 
         function renderDataBangunanForm(category) {
-             contentContainer.innerHTML = `
+             // Main form for building data
+             let formHtml = `
                 <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                         ${category.items.map(item => `
@@ -522,59 +714,73 @@
                                     type="${item.type}" 
                                     id="${item.id}" 
                                     rows="3"
-                                    class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                                    class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
                                     placeholder="${item.placeholder || ''}"
                                     value="${appState.buildingInfo[item.id] || ''}"
                                 >${item.type === 'textarea' ? (appState.buildingInfo[item.id] || '') : ''}</${item.type === 'textarea' ? 'textarea' : 'input'}>
                             </div>
                         `).join('')}
                     </div>
-                    <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end items-center gap-4">
-                        <button id="autofill-btn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors text-sm flex items-center gap-2">
-                           ✨ Isi Otomatis dengan AI
-                        </button>
-                        <button id="save-building-data-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                           Simpan Data
-                        </button>
-                    </div>
                 </div>
+            `;
 
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5 mt-4">
-                    <h4 class="text-lg font-bold text-slate-800">Analisis Denah dengan Gemini</h4>
-                    <p class="text-sm text-slate-500 mt-1">Unggah gambar atau PDF denah lantai untuk menghitung luas secara otomatis.</p>
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                         <div class="md:col-span-2">
-                            <label for="denah-file" class="block text-sm font-medium text-slate-700">Pilih File (Gambar/PDF)</label>
-                            <input type="file" id="denah-file" accept="image/*,application/pdf" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                         </div>
-                         <div>
-                            <label for="denah-scale" class="block text-sm font-medium text-slate-700">Skala Denah</label>
-                            <input type="text" id="denah-scale" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="cth: 1:100">
-                         </div>
-                         <div class="md:col-span-3 text-right">
-                            <button id="analyze-denah-btn" class="w-full md:w-auto bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2">
-                                Analisis File
-                            </button>
-                         </div>
+            // New section for floor plan analysis
+            let analysisHtml = `
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5 mt-6">
+                    <h3 class="text-xl font-bold text-slate-800 gradient-text">Analisis Denah dengan AI</h3>
+                    <p class="text-sm text-slate-500 mt-1">Unggah file denah (DWG, PDF, JPG, PNG) untuk mengekstrak data bangunan dan menghitung luasan secara otomatis.</p>
+                    
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                        <div>
+                            <label for="denah-file" class="block text-sm font-medium text-slate-700">Pilih File Denah (bisa lebih dari satu)</label>
+                            <input type="file" id="denah-file" accept=".dwg,.pdf,image/*" multiple class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                            <div class="mt-2 flex gap-2">
+                                <button id="upload-drive-denah" class="drive-upload-btn text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">Google Drive</button>
+                                <button id="upload-onedrive-denah" class="onedrive-upload-btn text-sm bg-sky-600 text-white py-1 px-3 rounded-md hover:bg-sky-700">OneDrive</button>
+                            </div>
+                            <div id="denah-file-list" class="mt-2 flex flex-col gap-2"></div>
+                        </div>
+                        <div>
+                            <label for="denah-notes" class="block text-sm font-medium text-slate-700">Catatan / Sumber Gambar</label>
+                            <input type="text" id="denah-notes" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="cth: Gambar As-Built dari Konsultan ABC, Skala 1:100">
+                        </div>
                     </div>
-                    <div id="denah-result-container" class="mt-4 hidden">
-                        <h5 class="font-semibold text-slate-800">Hasil Analisis Luas:</h5>
-                        <div class="mt-2 border rounded-lg overflow-hidden analysis-table">
+                    <div class="mt-4 flex justify-end items-center gap-3">
+                        <button id="export-denah-xlsx-btn" class="w-full md:w-auto bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center justify-center gap-2 ${appState.denahAnalysisResult ? '' : 'hidden'}">
+                            Simpan XLSX
+                        </button>
+                        <button id="analyze-denah-btn" class="w-full md:w-auto bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center justify-center gap-2">
+                            ✨ Analisis Denah
+                        </button>
+                    </div>
+
+                    <div id="denah-result-container" class="mt-6 hidden">
+                        <h4 class="font-semibold text-slate-800">Hasil Analisis Luasan:</h4>
+                        <div class="mt-2 border rounded-lg overflow-hidden">
                             <table class="min-w-full">
                                 <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Nama Ruangan</th>
-                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Perhitungan Luas (Detail)</th>
-                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Estimasi Luas (m²)</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Massa Bangunan</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Lantai</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Nama Ruang</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">Perhitungan</th>
+                                        <th class="px-4 py-2 text-right text-sm font-semibold text-slate-600">Luas (m²)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="denah-table-body" class="bg-white">
+                                <tbody id="denah-table-body" class="bg-white divide-y divide-slate-200">
+                                    <!-- Area calculation rows will be injected here -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             `;
+
+            contentContainer.innerHTML = formHtml + analysisHtml;
+
+            if (appState.denahAnalysisResult) {
+                renderDenahAnalysisResult(appState.denahAnalysisResult);
+            }
         }
         
         function renderDasarHukum(category) {
@@ -591,11 +797,11 @@
                 // Render custom items
                 appState.legalBasisCustom.filter(item => item.category === catName).forEach((item, index) => {
                     html += `<li class="text-sm text-slate-700 flex justify-between items-start">
-                                <div class="flex-grow">
-                                    ${item.text}
-                                    ${item.link ? `<br><a href="${item.link}" target="_blank" class="text-blue-600 hover:underline text-xs">${item.link}</a>` : ''}
-                                </div>
-                                <button data-index="${index}" class="delete-legal-btn text-red-500 hover:text-red-700 text-xs font-semibold ml-4 flex-shrink-0">HAPUS</button>
+                                 <div class="flex-grow">
+                                     ${item.text}
+                                     ${item.link ? `<br><a href="${item.link}" target="_blank" class="text-indigo-600 hover:underline text-xs">${item.link}</a>` : ''}
+                                 </div>
+                                 <button data-index="${index}" class="delete-legal-btn text-red-500 hover:text-red-700 text-xs font-semibold ml-4 flex-shrink-0">HAPUS</button>
                              </li>`;
                 });
 
@@ -609,22 +815,22 @@
                     <div class="mt-4 space-y-4">
                         <div>
                             <label for="new-legal-category" class="block text-sm font-medium text-slate-700">Kategori</label>
-                            <select id="new-legal-category" class="mt-1 w-full p-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <select id="new-legal-category" class="mt-1 w-full p-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                                 ${category.categories.map(c => `<option value="${c}">${c}</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label for="new-legal-text" class="block text-sm font-medium text-slate-700">Uraian Peraturan</label>
-                            <textarea id="new-legal-text" rows="3" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="cth: Peraturan Daerah Kota ABC Nomor 5 Tahun 2023..."></textarea>
+                            <textarea id="new-legal-text" rows="3" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="cth: Peraturan Daerah Kota ABC Nomor 5 Tahun 2023..."></textarea>
                         </div>
                         <div>
                             <label for="new-legal-link" class="block text-sm font-medium text-slate-700">Link/URL (Opsional)</label>
-                            <input type="url" id="new-legal-link" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="https://contoh.go.id/peraturan.pdf">
+                            <input type="url" id="new-legal-link" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="https://contoh.go.id/peraturan.pdf">
                         </div>
                         <div class="text-right">
-                             <button id="add-legal-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                                Tambahkan
-                            </button>
+                             <button id="add-legal-btn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+                                 Tambahkan
+                             </button>
                         </div>
                     </div>
                 </div>
@@ -634,37 +840,104 @@
             contentContainer.innerHTML = html;
         }
 
+        function generateDaftarTemuanHTML(temuanData) {
+            if (!temuanData || temuanData.length === 0) return '';
+            return `
+                <div id="daftar-temuan-container" class="mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-slate-800">Daftar Temuan</h2>
+                        <div>
+                            <button id="export-temuan-xlsx" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">Ekspor XLSX</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-slate-300 text-xs">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="px-3 py-2 border">No.</th>
+                                    <th class="px-3 py-2 border">Kode Temuan</th>
+                                    <th class="px-3 py-2 border">Lokasi</th>
+                                    <th class="px-3 py-2 border">Aspek Kajian</th>
+                                    <th class="px-3 py-2 border">Deskripsi Temuan (Kondisi Faktual)</th>
+                                    <th class="px-3 py-2 border">Kriteria/Persyaratan yang berlaku</th>
+                                    <th class="px-3 py-2 border">Analisis Risiko/Dampak</th>
+                                    <th class="px-3 py-2 border">Tingkat Risiko</th>
+                                    <th class="px-3 py-2 border">Rekomendasi Tindak Lanjut</th>
+                                    <th class="px-3 py-2 border">Referensi</th>
+                                    <th class="px-3 py-2 border">Dokumentasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${temuanData.map((temuan, index) => `
+                                    <tr>
+                                        <td class="border px-3 py-2 align-top">${index + 1}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.kodeTemuan || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.lokasi || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.aspekKajian || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.deskripsiTemuan || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.kriteria || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.analisisRisiko || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.tingkatRisiko || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.rekomendasi || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.referensi || ''}</td>
+                                        <td class="border px-3 py-2 align-top">${temuan.dokumentasi || ''}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderLaporanKomprehensif() {
             contentContainer.innerHTML = `
                 <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-                    <p class="text-sm text-slate-600 mb-4">Fitur ini akan mengumpulkan semua data yang telah Anda masukkan dan hasil analisis Gemini dari setiap aspek untuk menyusun draf laporan teknis komprehensif. Klik tombol di bawah untuk memulai proses.</p>
-                    <button id="generate-report-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors text-base flex items-center justify-center gap-2">
-                        ✨ Generate Laporan Komprehensif dengan AI
-                    </button>
+                    <p class="text-sm text-slate-600 mb-4">Gunakan tombol di bawah untuk membuat draf laporan teknis secara bertahap atau untuk menyusun daftar temuan.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button data-bab="1" class="generate-bab-btn w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center justify-center gap-2">✨ Generate Bab 1 & 2</button>
+                        <button data-bab="2" class="generate-bab-btn w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center justify-center gap-2">✨ Generate Bab 3 & 4</button>
+                        <button data-bab="3" class="generate-bab-btn w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center justify-center gap-2">✨ Generate Bab 5 & Lampiran</button>
+                        <button id="generate-temuan-btn" class="w-full bg-amber-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors text-sm flex items-center justify-center gap-2">📋 Generate Daftar Temuan</button>
+                        <button id="generate-all-btn" class="w-full md:col-span-2 bg-purple-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm flex items-center justify-center gap-2">🚀 Generate Laporan Lengkap</button>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                         <button id="clear-report-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm">Bersihkan Laporan</button>
+                    </div>
                 </div>
                 <div id="report-loader" class="text-center p-10 hidden">
                     <div class="loader inline-block"></div>
-                    <p class="text-slate-500 mt-2">Menyusun laporan, ini mungkin memakan waktu beberapa saat...</p>
+                    <p id="report-loader-text" class="text-slate-500 mt-2">Menyusun laporan...</p>
                 </div>
                 <div id="report-preview-container" class="hidden mt-4">
                      <h3 class="text-xl font-bold text-slate-800">Pratinjau Laporan (Dapat Disunting)</h3>
                      <div id="report-preview" contenteditable="true" class="mt-2 p-5 bg-white rounded-lg shadow-sm border border-slate-200 min-h-[400px]">
-                        <!-- Report content will be injected here -->
+                         <!-- Report content will be injected here -->
                      </div>
                 </div>
             `;
+
+            const reportPreview = document.getElementById('report-preview');
+            const reportPreviewContainer = document.getElementById('report-preview-container');
+            if (appState.daftarTemuanResult && reportPreview && reportPreviewContainer) {
+                const tableHtml = generateDaftarTemuanHTML(appState.daftarTemuanResult);
+                reportPreview.innerHTML += tableHtml + '<div class="page-break"></div>'; // Append the saved table
+                reportPreviewContainer.classList.remove('hidden');
+                // Make sure window.daftarTemuanData is also set for export functionality
+                window.daftarTemuanData = appState.daftarTemuanResult;
+            }
         }
 
         function renderPengaturan() {
             contentContainer.innerHTML = `
                 <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5 space-y-6">
                     <div>
-                        <h4 class="text-lg font-bold text-slate-800">Pengaturan API</h4>
-                        <p class="text-sm text-slate-500 mt-1">Konfigurasi penyedia, model, dan API Key Anda.</p>
+                        <h4 class="text-lg font-bold text-slate-800">Pengaturan API Generatif</h4>
+                        <p class="text-sm text-slate-500 mt-1">Konfigurasi penyedia, model, dan API Key Anda untuk fitur-fitur AI.</p>
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="api-provider-select" class="block text-sm font-medium text-slate-700">Penyedia AI</label>
-                                <select id="api-provider-select" class="mt-1 w-full p-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                                <select id="api-provider-select" class="mt-1 w-full p-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                                     <option value="gemini" ${appState.settings.apiProvider === 'gemini' ? 'selected' : ''}>Google Gemini</option>
                                     <option value="openai" ${appState.settings.apiProvider === 'openai' ? 'selected' : ''}>OpenAI (ChatGPT)</option>
                                     <option value="anthropic" ${appState.settings.apiProvider === 'anthropic' ? 'selected' : ''}>Anthropic (Claude)</option>
@@ -673,11 +946,30 @@
                             </div>
                             <div>
                                 <label for="api-model-name" class="block text-sm font-medium text-slate-700">Nama Model</label>
-                                <input type="text" id="api-model-name" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="cth: gpt-4o" value="${appState.settings.apiModelName || ''}">
+                                <input type="text" id="api-model-name" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="cth: gpt-4o" value="${appState.settings.apiModelName || ''}">
                             </div>
                             <div class="md:col-span-2">
                                 <label for="api-key-input" class="block text-sm font-medium text-slate-700">API Key</label>
-                                <input type="password" id="api-key-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" value="${appState.settings.apiKey || ''}">
+                                <input type="password" id="api-key-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" value="${appState.settings.apiKey || ''}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t">
+                        <h4 class="text-lg font-bold text-slate-800">Pengaturan Unggah File Cloud</h4>
+                        <p class="text-sm text-slate-500 mt-1">Masukkan kredensial dari Google Cloud dan Microsoft Azure untuk mengaktifkan unggahan file.</p>
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="google-api-key-input" class="block text-sm font-medium text-slate-700">Google Drive API Key</label>
+                                <input type="password" id="google-api-key-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" value="${appState.settings.googleApiKey || ''}">
+                            </div>
+                             <div>
+                                <label for="google-client-id-input" class="block text-sm font-medium text-slate-700">Google Drive Client ID</label>
+                                <input type="password" id="google-client-id-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" value="${appState.settings.googleClientId || ''}">
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="onedrive-client-id-input" class="block text-sm font-medium text-slate-700">OneDrive Client ID</label>
+                                <input type="password" id="onedrive-client-id-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" value="${appState.settings.oneDriveClientId || ''}">
                             </div>
                         </div>
                     </div>
@@ -687,33 +979,151 @@
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="logo-input" class="block text-sm font-medium text-slate-700">Logo Perusahaan</label>
-                                <input type="file" id="logo-input" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                                <img id="logo-preview" src="${appState.settings.companyLogo || 'https://placehold.co/200x100?text=Logo'}" class="mt-2 h-20 object-contain border rounded-md p-1 bg-slate-50">
+                                <input type="file" id="logo-input" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                                <img id="logo-preview" src="${appState.settings.companyLogo || 'https://placehold.co/200x100/e0e7ff/4338ca?text=Logo'}" class="mt-2 h-20 object-contain border rounded-md p-1 bg-slate-50">
                             </div>
                             <div>
                                 <label for="cover-input" class="block text-sm font-medium text-slate-700">Gambar Cover Laporan</label>
-                                <input type="file" id="cover-input" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                                <img id="cover-preview" src="${appState.settings.coverImage || 'https://placehold.co/400x200?text=Cover'}" class="mt-2 h-20 object-cover w-full border rounded-md p-1 bg-slate-50">
+                                <input type="file" id="cover-input" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                                <img id="cover-preview" src="${appState.settings.coverImage || 'https://placehold.co/400x200/e0e7ff/4338ca?text=Cover'}" class="mt-2 h-20 object-cover w-full border rounded-md p-1 bg-slate-50">
                             </div>
                             <div class="md:col-span-2">
                                 <label for="header-input" class="block text-sm font-medium text-slate-700">Teks Header Laporan</label>
-                                <input type="text" id="header-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="cth: Laporan Kajian Teknis - PT. Konsultan Jaya" value="${appState.settings.reportHeader || ''}">
+                                <input type="text" id="header-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="cth: Laporan Kajian Teknis - PT. Konsultan Jaya" value="${appState.settings.reportHeader || ''}">
                             </div>
                              <div class="md:col-span-2">
                                 <label for="footer-input" class="block text-sm font-medium text-slate-700">Teks Footer Laporan</label>
-                                <input type="text" id="footer-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="cth: Dokumen Rahasia Perusahaan" value="${appState.settings.reportFooter || ''}">
+                                <input type="text" id="footer-input" class="mt-1 w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="cth: Dokumen Rahasia Perusahaan" value="${appState.settings.reportFooter || ''}">
                             </div>
                         </div>
                     </div>
 
                      <div class="pt-6 border-t text-right">
-                         <button id="save-settings-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                            Simpan Pengaturan
-                        </button>
-                    </div>
+                         <button id="save-settings-btn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+                             Simpan Pengaturan
+                         </button>
+                     </div>
                 </div>
             `;
         }
+        
+        function renderDaftarSimak(category) {
+            // Helper function to get data safely
+            const getChecklistData = (id) => appState.checklistState[id] || { note: 'Belum dikaji', status: 'Belum Dinilai' };
+             const getSimakData = (id, field) => (appState.daftarSimakState[id] && appState.daftarSimakState[id][field]) || '';
+
+            // Helper to generate a standard row for the checklist
+            const createChecklistRow = (title, itemId, details = []) => {
+                let detailRows = details.map(detail => {
+                    const data = getChecklistData(detail.id);
+                    const simakData = appState.daftarSimakState[detail.id] || {};
+                    const isSesuai = data.status === 'Sesuai';
+                    
+                    let summary = appState.geminiResults[detail.id] || '';
+                    if (summary) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = summary;
+                        const firstP = tempDiv.querySelector('p');
+                        summary = firstP ? firstP.textContent.substring(0, 150) + '...' : 'Ringkasan tidak tersedia.';
+                    } else {
+                         summary = '<em>Belum dikaji.</em>';
+                    }
+
+                    return `
+                        <tr>
+                            <td class="border p-2">${detail.name}</td>
+                            <td class="border p-2"><input type="text" value="${simakData.sample || ''}" class="w-full p-1 border rounded" data-simak-id="${detail.id}" data-simak-field="sample"></td>
+                            <td class="border p-2">${summary}</td>
+                            <td class="border p-2"><input type="text" value="${simakData.documentation || ''}" class="w-full p-1 border rounded" data-simak-id="${detail.id}" data-simak-field="documentation"></td>
+                            <td class="border p-2"><textarea class="w-full p-1 border rounded" rows="2" data-simak-id="${detail.id}" data-simak-field="keterangan">${simakData.keterangan || data.note || ''}</textarea></td>
+                        </tr>
+                    `;
+                }).join('');
+
+                return `
+                    <tbody class="bg-slate-50 font-semibold">
+                        <tr>
+                            <td colspan="5" class="border p-2">${title}</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        ${detailRows}
+                    </tbody>
+                `;
+            };
+
+            const kondisiData = appState.daftarSimakState.kondisiBangunan || {};
+
+            let html = `
+            <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 space-y-6 text-sm">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-center gradient-text">DAFTAR SIMAK SERTIFIKAT LAIK FUNGSI</h3>
+                    <button id="export-simak-xlsx" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">Ekspor XLSX</button>
+                </div>
+                <p class="text-center text-slate-500">FORM KAJIAN PEMERIKSAAN BANGUNAN GEDUNG</p>
+
+                <!-- K. IDENTITAS PEMILIK -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold bg-slate-100 p-2 rounded-md">K. IDENTITAS PEMILIK</h4>
+                    <table class="w-full border-collapse border">
+                         <tbody>
+                            <tr>
+                                <td class="border p-2 font-semibold">Nama Pemilik</td>
+                                <td class="border p-2" colspan="3">${appState.buildingInfo['db-4'] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td class="border p-2 font-semibold">Alamat Bangunan</td>
+                                <td class="border p-2" colspan="3">${appState.buildingInfo['db-2'] || 'N/A'}</td>
+                            </tr>
+                            <tr class="font-semibold bg-slate-50">
+                                <td class="border p-2">No</td>
+                                <td class="border p-2">Kondisi Bangunan Gedung</td>
+                                <td class="border p-2 text-center">Ya</td>
+                                <td class="border p-2 text-center">Tidak</td>
+                            </tr>
+                            ${['Miring / Deformasi', 'Terdapat Kerusakan', '   a. Rusak Ringan', '   b. Sedang', '   c. Rusak Berat', 'Bangunan dimanfaatkan', 'Bangunan terawat dengan baik']
+                            .map((item, index) => `
+                                <tr>
+                                    <td class="border p-2">${index < 2 || index > 4 ? (index > 4 ? index-3 : index+1) : ''}</td>
+                                    <td class="border p-2">${item}</td>
+                                    <td class="border p-2 text-center"><input type="radio" name="kondisi-${index}" value="ya" ${kondisiData[index] === 'ya' ? 'checked' : ''} data-kondisi-id="${index}"></td>
+                                    <td class="border p-2 text-center"><input type="radio" name="kondisi-${index}" value="tidak" ${kondisiData[index] === 'tidak' ? 'checked' : ''} data-kondisi-id="${index}"></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold bg-slate-100 p-2 rounded-md">K.1. PEMERIKSAAN PERSYARATAN TATA BANGUNAN GEDUNG</h4>
+                    <table class="w-full border-collapse border">
+                        <thead class="bg-slate-50"><tr class="text-left"><th class="border p-2 w-1/4">Pemeriksaan</th><th class="border p-2">Sampel Ke-</th><th class="border p-2">Hasil Kajian (Ringkasan)</th><th class="border p-2">Dokumentasi</th><th class="border p-2">Keterangan</th></tr></thead>
+                        ${createChecklistRow('K.1.1. Pemeriksaan Persyaratan Peruntukan Bangunan Gedung', null, [
+                            { name: '1. Fungsi Bangunan Gedung', id: 'tb-1' },
+                            { name: '2. Pemanfaatan Setiap Ruang Dalam Bangunan Gedung', id: 'tb-2' },
+                            { name: '3. Pemanfaatan Ruang Luar Pada Persil Bangunan Gedung', id: 'tb-3' }
+                        ])}
+                        ${createChecklistRow('K.1.2. Pemeriksaan Persyaratan Intensitas Bangunan Gedung', null, [
+                            { name: '1. Luas Lantai Dasar & KDB', id: 'tb-4' },
+                            { name: '2. Luas Total Lantai & KLB', id: 'tb-5' },
+                            { name: '3. Luas Daerah Hijau Dalam Persil', id: 'tb-6' },
+                            { name: '4. Jarak Antar Bangunan', id: 'tb-7' },
+                            { name: '5. Jarak Sempadan & Batas Persil', id: 'tb-8' }
+                        ])}
+                         ${createChecklistRow('K.1.3 & K.1.4. Pemeriksaan Penampilan & Tata Ruang Dalam Bangunan Gedung', null, [
+                            { name: '1. Penampilan Bangunan Gedung', id: 'pa-1' },
+                            { name: '2. Tata Ruang Dalam', id: 'pa-5' }
+                        ])}
+                        ${createChecklistRow('K.1.5. Pemeriksaan Keseimbangan Dengan Lingkungan', null, [
+                            { name: '1. Keseimbangan dengan Lingkungan', id: 'pa-8' }
+                        ])}
+                    </table>
+                </div>
+            </div>
+            `;
+            contentContainer.innerHTML = html;
+        }
+
 
         function renderChecklist(category) {
             contentContainer.innerHTML = category.items.map(item => {
@@ -725,11 +1135,15 @@
                          <label for="doc-file-${item.id}" class="block text-sm font-medium text-slate-700">Unggah Dokumen Pendukung (Gambar/PDF, bisa lebih dari satu)</label>
                          <div class="flex items-start gap-2 mt-2">
                              <div class="flex-grow">
-                                <input type="file" id="doc-file-${item.id}" accept="image/*,application/pdf" multiple class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                                <div id="file-list-${item.id}" class="text-xs text-slate-500 mt-2"></div>
+                                 <input type="file" id="doc-file-${item.id}" accept="image/*,application/pdf" multiple class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                                 <div class="mt-2 flex gap-2">
+                                     <button data-item-id="${item.id}" class="drive-upload-btn text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">Google Drive</button>
+                                     <button data-item-id="${item.id}" class="onedrive-upload-btn text-sm bg-sky-600 text-white py-1 px-3 rounded-md hover:bg-sky-700">OneDrive</button>
+                                 </div>
+                                 <div id="file-list-${item.id}" class="mt-2 flex flex-wrap gap-2"></div>
                              </div>
                              <button data-item-id="${item.id}" class="ekstrak-btn bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors text-sm flex-shrink-0">
-                                Ekstrak Info
+                                 Ekstrak Info
                              </button>
                          </div>
                     </div>
@@ -745,11 +1159,11 @@
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="kondisi-${item.id}" class="block text-sm font-medium text-slate-700 mb-1">Kondisi Eksisting & Catatan</label>
-                            <textarea id="kondisi-${item.id}" rows="4" class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">${itemState.note}</textarea>
+                            <textarea id="kondisi-${item.id}" rows="4" class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">${itemState.note}</textarea>
                         </div>
                         <div>
                             <label for="status-${item.id}" class="block text-sm font-medium text-slate-700 mb-1">Status Penilaian</label>
-                            <select id="status-${item.id}" class="w-full p-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <select id="status-${item.id}" class="w-full p-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                                 <option ${itemState.status === 'Belum Dinilai' ? 'selected' : ''}>Belum Dinilai</option>
                                 <option ${itemState.status === 'Sesuai' ? 'selected' : ''}>Sesuai</option>
                                 <option ${itemState.status === 'Tidak Sesuai' ? 'selected' : ''}>Tidak Sesuai</option>
@@ -761,16 +1175,17 @@
                         <button data-item-id="${item.id}" class="kaji-btn bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2">
                             ✨ Kaji dengan AI
                         </button>
-                        <button data-item-id="${item.id}" class="save-item-docx-btn bg-gradient-to-r from-blue-500 to-sky-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2 ${geminiResult ? '' : 'hidden'}">
+                        <button data-item-id="${item.id}" class="save-item-docx-btn bg-gradient-to-r from-blue-500 to-sky-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm flex items-center justify-center gap-2 ${appState.geminiResults.hasOwnProperty(item.id) ? '' : 'hidden'}">
                             Simpan DOCX
                         </button>
                     </div>
-                    <div id="hasil-${item.id}" class="mt-4 p-4 bg-slate-50 rounded-md border border-slate-200 ${geminiResult ? '' : 'hidden'}">
+                    <div id="hasil-${item.id}" class="mt-4 p-4 bg-slate-50 rounded-md border border-slate-200 ${appState.geminiResults.hasOwnProperty(item.id) ? '' : 'hidden'}">
                         <div class="loader-container text-center py-4 ${geminiResult ? 'hidden' : ''}">
                             <div class="loader inline-block"></div>
                             <p class="text-sm text-slate-500 mt-2">Menganalisis...</p>
                         </div>
                         <div class="result-content text-sm text-slate-700 space-y-2">${geminiResult}</div>
+                        <div class="chart-container mt-4" style="position: relative; height:40vh; width:80vw"><canvas id="chart-${item.id}"></canvas></div>
                     </div>
                 </div>
             `}).join('');
@@ -782,7 +1197,7 @@
                     const reader = new FileReader();
                     reader.onloadend = () => resolve({
                         base64: reader.result.split(',')[1],
-                        mimeType: file.type
+                        mimeType: file.type || 'application/octet-stream' // Fallback for unknown types like .dwg
                     });
                     reader.onerror = reject;
                     reader.readAsDataURL(file);
@@ -792,8 +1207,7 @@
         }
 
         function generateReportHTML() {
-            // This function is now a fallback or can be used for simple summaries.
-            // The main report generation uses the content from the editable preview.
+            // This function creates a basic HTML string representation of the report for export.
             let reportHTML = `
                 <style>
                     body { font-family: 'Times New Roman', serif; font-size: 12pt; }
@@ -836,14 +1250,17 @@
             Object.keys(appData).forEach(catKey => {
                 const category = appData[catKey];
                 if (category.type === 'checklist') {
-                    reportHTML += `<h3>Aspek ${category.title}</h3>`;
-                    category.items.forEach(item => {
-                        const geminiResult = appState.geminiResults[item.id];
-                        if (geminiResult) {
-                            reportHTML += `<h4>${item.name}</h4>`;
-                            reportHTML += geminiResult;
-                        }
-                    });
+                    const hasResults = category.items.some(item => appState.geminiResults[item.id]);
+                    if (hasResults) {
+                        reportHTML += `<h3>${category.title}</h3>`;
+                        category.items.forEach(item => {
+                            const geminiResult = appState.geminiResults[item.id];
+                            if (geminiResult) {
+                                // Create a sub-header for each item within the aspect
+                                reportHTML += `<div style="margin-top: 15px;"><h4>${item.name}</h4>${geminiResult}</div>`;
+                            }
+                        });
+                    }
                 }
             });
 
@@ -871,38 +1288,177 @@
                 const itemId = id.replace('kondisi-', '');
                 if (!appState.checklistState[itemId]) appState.checklistState[itemId] = {};
                 appState.checklistState[itemId].note = value;
+            } else if (target.hasAttribute('data-simak-id')) {
+                const simakId = target.dataset.simakId;
+                const simakField = target.dataset.simakField;
+                if (!appState.daftarSimakState[simakId]) {
+                    appState.daftarSimakState[simakId] = {};
+                }
+                appState.daftarSimakState[simakId][simakField] = value;
+            } else {
+                return; 
             }
-            saveState();
+            debouncedSaveState();
         });
 
         contentContainer.addEventListener('change', (e) => {
             const target = e.target;
             const id = target.id;
             const value = target.value;
-
+            
             if (id.startsWith('status-')) {
                 const itemId = id.replace('status-', '');
                 if (!appState.checklistState[itemId]) appState.checklistState[itemId] = {};
                 appState.checklistState[itemId].status = value;
+                saveState(); // Simpan langsung saat status berubah
+            }
+
+            if (target.hasAttribute('data-kondisi-id')) {
+                const kondisiId = target.dataset.kondisiId;
+                if (!appState.daftarSimakState.kondisiBangunan) {
+                    appState.daftarSimakState.kondisiBangunan = {};
+                }
+                appState.daftarSimakState.kondisiBangunan[kondisiId] = target.value;
                 saveState();
             }
 
-            if (e.target.type === 'file' && e.target.id.startsWith('doc-file-')) {
-                const itemId = e.target.id.replace('doc-file-', '');
-                const fileListContainer = document.getElementById(`file-list-${itemId}`);
-                if (fileListContainer) {
-                    const files = e.target.files;
-                    if (files.length > 0) {
-                        fileListContainer.innerHTML = `Terpilih: ${Array.from(files).map(f => f.name).join(', ')}`;
-                    } else {
-                        fileListContainer.innerHTML = '';
-                    }
+            if (e.target.type === 'file') {
+                const fileInput = e.target;
+                const listContainerId = fileInput.id.startsWith('denah-') ? 'denah-file-list' : `file-list-${fileInput.id.replace('doc-file-', '')}`;
+                const listContainer = document.getElementById(listContainerId);
+                
+                if (listContainer) {
+                    listContainer.innerHTML = ''; // Hapus pratinjau lama
+                    Array.from(fileInput.files).forEach(file => {
+                        listContainer.appendChild(createFilePreview(file));
+                    });
                 }
             }
         });
 
         contentContainer.addEventListener('click', async (e) => {
-            // Handle "Kaji dengan Gemini"
+            // Handle "Analisis Denah"
+            const analyzeDenahBtn = e.target.closest('#analyze-denah-btn');
+            if (analyzeDenahBtn) {
+                const resultContainer = document.getElementById('denah-result-container');
+                const tableBody = document.getElementById('denah-table-body');
+                const exportButton = document.getElementById('export-denah-xlsx-btn');
+                if(resultContainer && tableBody && exportButton) {
+                    resultContainer.classList.add('hidden');
+                    tableBody.innerHTML = '';
+                    exportButton.classList.add('hidden');
+                }
+
+                if (appState.settings.apiProvider !== 'gemini') {
+                    showToast('Fitur analisis denah hanya didukung oleh Gemini.', true);
+                    return;
+                }
+                const fileInput = document.getElementById('denah-file');
+                const notesInput = document.getElementById('denah-notes');
+                const files = fileInput.files;
+
+                if (files.length === 0) {
+                    showToast("Silakan pilih file denah (DWG, PDF, Gambar) terlebih dahulu.", true);
+                    return;
+                }
+
+                analyzeDenahBtn.disabled = true;
+                analyzeDenahBtn.innerHTML = `<div class="loader mr-2"></div> Menganalisis ${files.length} file...`;
+
+                try {
+                    const fileData = await getFilesAsBase64(files);
+                    const notes = notesInput.value.trim();
+
+                    const prompt = `
+                        Anda adalah seorang arsitek ahli dan quantity surveyor. Tugas Anda adalah menganalisis file-file denah yang diunggah (${Array.from(files).map(f => f.name).join(', ')}) dan catatan yang diberikan. Gabungkan informasi dari semua file menjadi satu analisis komprehensif.
+
+                        Files: [File-file terlampir]
+                        Catatan/Sumber Gambar: "${notes || 'Tidak ada catatan'}"
+
+                        Lakukan tugas-tugas berikut:
+                        1.  **Ekstrak Data Bangunan**: Identifikasi informasi berikut dari gambar jika ada (seperti dari kop gambar): Nama Bangunan, Alamat, Nama Pemilik/Pengelola, Tahun Dibangun.
+                        2.  **Analisis Luasan Rinci**:
+                            * Identifikasi setiap massa bangunan yang berbeda (jika ada lebih dari satu).
+                            * Untuk setiap massa, identifikasi setiap lantai.
+                            * Untuk setiap lantai, identifikasi setiap nama ruangan dan hitung luasnya dalam meter persegi. Tunjukkan cara perhitungan (misal: "5.2m x 4.5m" atau "estimasi dari poligon").
+                            * Kelompokkan hasil dalam tabel.
+                        3.  **Kalkulasi Total**: Hitung total luas untuk setiap lantai dan grand total untuk keseluruhan bangunan.
+
+                        **Format Output**: Kembalikan hasil HANYA dalam format JSON yang ketat, tanpa markdown atau teks tambahan. JSON harus memiliki struktur berikut:
+                        {
+                          "data_bangunan_saran": {
+                            "db-1": "[Nama Bangunan Gedung]",
+                            "db-2": "[Alamat Lengkap]",
+                            "db-4": "[Nama Pemilik / Pengelola]",
+                            "db-5": "[Tahun Dibangun]"
+                          },
+                          "rincian_luas": [
+                            {
+                              "massa": "[Nama Massa Bangunan 1]",
+                              "lantai": "[Nama Lantai 1]",
+                              "nama_ruang": "[Nama Ruang A]",
+                              "perhitungan": "[Detail perhitungan, cth: 5.0 x 4.0]",
+                              "luas_m2": 20.0
+                            }
+                          ],
+                          "total_luas_lantai": [
+                            {
+                                "massa": "[Nama Massa Bangunan 1]",
+                                "lantai": "[Nama Lantai 1]",
+                                "total_luas_m2": 150.0
+                            }
+                          ],
+                          "grand_total_luas_m2": 150.0
+                        }
+                    `;
+                    
+                    const responseText = await callAI(prompt, fileData);
+                    
+                    if (!responseText || typeof responseText !== 'string' || !responseText.includes('{')) {
+                        throw new Error("Respons AI tidak valid atau tidak mengandung format JSON.");
+                    }
+                    
+                    const jsonString = responseText.substring(responseText.indexOf('{'), responseText.lastIndexOf('}') + 1);
+                    const data = JSON.parse(jsonString);
+
+                    appState.denahAnalysisResult = data;
+
+                    if (data.data_bangunan_saran) {
+                        Object.keys(data.data_bangunan_saran).forEach(key => {
+                            const value = data.data_bangunan_saran[key];
+                            if (value && value.trim() !== '') {
+                                const inputElement = document.getElementById(key);
+                                if (inputElement) {
+                                    inputElement.value = value;
+                                    appState.buildingInfo[key] = value;
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (data.grand_total_luas_m2) {
+                        const totalAreaInput = document.getElementById('db-9');
+                        if (totalAreaInput) {
+                            totalAreaInput.value = data.grand_total_luas_m2.toFixed(2);
+                            appState.buildingInfo['db-9'] = data.grand_total_luas_m2.toFixed(2);
+                        }
+                    }
+
+                    renderDenahAnalysisResult(appState.denahAnalysisResult);
+                    
+                    saveState(); 
+                    showToast('Analisis denah berhasil! Data bangunan dan luasan telah diperbarui.');
+
+                } catch (error) {
+                    console.error("Error analyzing floor plan:", error);
+                    showToast(`Gagal menganalisis denah: ${error.message}`, true);
+                } finally {
+                    analyzeDenahBtn.disabled = false;
+                    analyzeDenahBtn.innerHTML = '✨ Analisis Denah';
+                }
+            }
+
+            // Handle "Kaji dengan AI"
             const kajiBtn = e.target.closest('.kaji-btn');
             if (kajiBtn) {
                 kajiBtn.disabled = true;
@@ -913,7 +1469,7 @@
                 const files = fileInput.files;
 
                 if (!userInput.trim() && files.length === 0) {
-                    alert("Mohon isi 'Kondisi Eksisting & Catatan' atau unggah dokumen pendukung.");
+                    showToast("Mohon isi 'Kondisi Eksisting & Catatan' atau unggah dokumen pendukung.", true);
                     kajiBtn.disabled = false;
                     return;
                 }
@@ -925,6 +1481,8 @@
                 resultContainer.classList.remove('hidden');
                 loader.classList.remove('hidden');
                 resultContent.innerHTML = '';
+                loader.querySelector('p').textContent = `Menganalisis ${files.length > 0 ? files.length + ' file...' : '...'}`;
+
 
                 const fileDataArray = await getFilesAsBase64(files);
                 
@@ -946,99 +1504,632 @@
                 let prompt;
                 
                 const fileInstruction = files.length > 0 ? "Analisis informasi dari file yang diunggah sebagai sumber utama, dan gunakan catatan teks sebagai pelengkap." : "Gunakan catatan teks sebagai sumber utama analisis.";
+                
+                const fileNames = Array.from(files).map(f => f.name).join(', ');
+                const imagePlaceholderInstruction = files.length > 0
+                    ? `PENTING: Setelah analisis teks, sertakan placeholder untuk setiap gambar yang dianalisis dengan format berikut, ganti 'NAMA_FILE' dengan nama file yang relevan: <div class='mt-2 border p-2 rounded-md bg-gray-100 text-center text-sm text-gray-500'>[Placeholder untuk Gambar: ${fileNames}]</div>`
+                    : '';
 
-                prompt = `
-                    Anda adalah seorang ahli pengkaji bangunan gedung profesional di bidang rekayasa dan penyusunan laporan teknis untuk kelaikan fungsi bangunan gedung di Indonesia. Tugas Anda adalah membuat laporan kajian teknis yang terstruktur dan detail, Buatlah sebuah Laporan Hasil Pemeriksaan Komprehensif pada sebuah bangunan gedung. Laporan harus mengikuti struktur, format, gaya bahasa, dan kedalaman analisis seperti contoh laporan pemeriksaan struktur yang menjadi acuan. Gunakan data hipotetis yang realistis dan relevan untuk aspek yang diperiksa.
+                // ... (All specific prompts remain the same)
+                 if (itemId === 'kt-8') {
+                     prompt = `
+                         Anda adalah seorang Ahli Hidrologi dan Teknik Sipil Keairan yang sangat berpengalaman. Tugas Anda adalah menyusun laporan teknis pemeriksaan sistem pengelolaan air hujan yang komprehensif, mengikuti metodologi yang sistematis dan standar teknis yang berlaku di Indonesia.
 
-                    ${buildingContext}
-                    ${legalBasisContext}
+                         ${buildingContext}
 
-                    Berdasarkan data berikut:
-                    - Aspek Kajian: "${appData[activeCategory].title}"
-                    - Item Pemeriksaan: "${itemData.name}"
-                    - Standar Acuan Awal: "${itemData.standard}"
-                    - Kondisi Eksisting / Catatan Lapangan: "${userInput}"
-                    - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file yang diunggah.` : 'Tidak ada.'}
+                         Data Pemeriksaan:
+                         - Item: "Neraca Air Hujan"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
 
-                    Instruksi Utama: ${fileInstruction}
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti 7 langkah pemeriksaan sistematis. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan dengan jelas "Data tidak memadai, diperlukan survei/pengukuran lapangan" dan jelaskan tindakan yang diperlukan. Selalu rujuk standar yang relevan.
 
-                    Buatlah laporan kajian komprehensif dalam format HTML (hanya kode di dalam <div> utama, tanpa tag html/body). Laporan harus mengikuti struktur berikut:
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>1. Persiapan Dokumen</h4>
+                         <p>Kelengkapan dokumen teknis (gambar drainase, data curah hujan, data topografi): [Analisis kelengkapan dokumen dari input].</p>
 
-                    <h4>1. RINGKASAN EKSEKUTIF</h4>
-                    <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
-                    <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
-                    <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
-                    <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
-                    <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
-                    
-                    <h4>2. PENDAHULUAN</h4>
-                    <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
-                    <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
-                    
-                    <h4>3. TABEL PERBANDINGAN</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Parameter</th>
-                                <th>Kondisi Eksisting (Berdasarkan Dokumen & Catatan)</th>
-                                <th>Ketentuan (NSPK)</th>
-                                <th>Kesesuaian NSPK</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>[Sub-parameter atau detail dari item pemeriksaan]</td>
-                                <td>[Sajikan data dari file dan catatan secara ringkas.]</td>
-                                <td>[Sebutkan peraturan relevan dari daftar Dasar Hukum yang diberikan, seperti PP 16/2021, SNI, atau lainnya beserta isinya dan sebutkan kesesuaiannya berapa/apa?. Selalu sebutkan sumber aturannya.]</td>
-                                <td>[hasil kesimpulan sesuai/tidak sesuai dari kondisi eksisting dengan ketentuan (NSPK) apakah sudah sesuai dengan ketentuan yang berlaku?.]</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p>[paragraf ini untuk menampilkan coloumn chart/line chart/pie chart/Scatter dengan garis batasan sesuai ketentuan yang ada di tabel perbandingan.]</p>
-                    
-                    <h4>4. HASIL PEMERIKSAAN DOKUMEN (DOCUMENT REVIEW)</h4>
-                    <p>4.1. Verifikasi Kelengkapan Dokumen:</p>
-                    <p>[Buat tabel status kelengkapan dokumen (PBG/IMB, Gambar As-Built Sistem, Perhitungan Desain [misal: hidrolik hidran], Riwayat Pemeliharaan). Nyatakan jika ada dokumen yang "Tidak Ditemukan" atau "Tidak Lengkap".]</p>
-                    <p>4.2. Tinjauan Kriteria Desain:</p>
-                    <p>[Bandingkan desain pada gambar as-built dengan persyaratan standar. Identifikasi potensi kesenjangan. Contoh: "Desain awal sistem hidran mengacu pada standar lama dengan klasifikasi bahaya kebakaran ringan, padahal fungsi sebagai pusat konvensi menuntut klasifikasi bahaya sedang/berat yang memerlukan debit air lebih besar."]</p>
+                         <h4>2. Pemeriksaan Lapangan</h4>
+                         <p>Inspeksi visual sistem saluran, talang, sumur resapan, dan elevasi tapak: [Deskripsikan kondisi fisik sistem berdasarkan data yang ada].</p>
+                         ${imagePlaceholderInstruction}
 
-                    <h4>5. HASIL PEMERIKSAAN DAN PENGUJIAN KONDISI LAPANGAN</h4>
-                    <p>5.1. Metodologi Pemeriksaan Lapangan:</p>
-                    <p>[Jelaskan metode yang digunakan (contoh: inspeksi visual, pengukuran tekanan & aliran, uji fungsional, simulasi alarm).]</p>
-                    <p>5.2. Hasil Pemeriksaan Komponen:</p>
-                    <p>[Uraikan temuan untuk setiap komponen dalam sub-bab terpisah. Gunakan data kuantitatif.]</p>
+                         <h4>3. Verifikasi Perhitungan</h4>
+                         <p>Perhitungan ulang debit air hujan rencana (Q = C.I.A):</p>
+                         <table>
+                             <thead><tr><th>Area Tangkapan (Catchment)</th><th>Luas (A)</th><th>Koefisien Limpasan (C)</th><th>Intensitas Hujan (I)</th><th>Debit Rencana (Q)</th></tr></thead>
+                             <tbody><tr><td>[Contoh: Atap]</td><td>[Data luas]</td><td>[cth: 0.9]</td><td>[Data hujan lokal]</td><td>[Hasil kalkulasi]</td></tr></tbody>
+                         </table>
+                         <p>Kapasitas saluran: [Bandingkan debit rencana dengan kapasitas saluran yang ada dari input].</p>
 
-                    <h4>6. VERIFIKASI PERHITUNGAN MANUAL</h4>
-                    <p>[Buatlah perhitungan manual yang relevan lebih dari 1 perhitungan untuk memverifikasi aspek kunci dari [${itemData.name}]. Gunakan format berikut untuk setiap perhitungan:]</p>
-                    <p>[Judul Perhitungan]</p>
-                    <p>[Tujuan: (contoh Verifikasi kecukupan volume septic tank eksisting).]</p>
-                    <p>Data Teknis & Standar:</p>
-                    <p>[menampilkan data teknis dan standar dengan format poin]</p>
-                    <p>Langkah-langkah Perhitungan:</p>
-                    <p>[Tunjukkan rumus dan substitusi angka dengan jelas, contoh: Volume Air Limbah Harian = Jumlah Penghuni x Pemakaian Air]</p>
-                    <p>[contoh Tunjukkan perhitungan kebutuhan volume total berdasarkan periode pengurasan]</p>
-                    <p>Evaluasi Hasil:</p>
-                    <p>[Bandingkan hasil perhitungan V_butuh dengan V_eksisting.]</p>
-                    <p>[Analisis]</p>
+                         <h4>4. Analisis Sistem</h4>
+                         <p>Analisis kemampuan sistem menampung dan mengalirkan air hujan: [Evaluasi berdasarkan perbandingan kapasitas aktual dengan debit rencana. Identifikasi potensi genangan].</p>
 
-                    <h4>7. HASIL ANALISIS DAN EVALUASI KINERJA</h4>
-                    <p>[Paragraf yang menganalisa dan mengevaluasi secara mendalam hasil dari tabel perbandingan. Analisis kesesuaian antara kondisi eksisting dengan NSPK. Bab ini membandingkan temuan lapangan dengan persyaratan standar]</p>
-                    
-                    <h4>8. TEMUAN</h4>
-                    <ul>
-                        <li>[Poin temuan spesifik atau ketidaksesuaian yang paling signifikan berdasarkan Temuan Kritis/Mayor/Minor. Jika tidak ada, sebutkan "Tidak ditemukan ketidaksesuaian signifikan".]</li>
-                    </ul>
-                    
-                    <h4>9. KESIMPULAN DAN REKOMENDASI</h4>
-                    <p>9.1. Ringkasan Hasil Evaluasi dan Temuan Defisiensi:</p>
-                    <p>[Rangkum kembali semua temuan negatif dari bab-bab sebelumnya secara ringkas.]</p>
-                    <p>9.2. Pernyataan Kelaikan Fungsi:</p>
-                    <p>[Ulangi pernyataan dari Ringkasan Eksekutif dengan justifikasi yang lebih detail.]</P
-                    <p>9.3. Rekomendasi Teknis:</p>
-                    <ul>
-                        <li>[Poin tindakan perbaikan yang jelas dan dapat ditindaklanjuti berdasarkan temuan Kritis/Mayor/Minor. Jelaskan cara perbaikan singkatnya dengan waktu penyelesaiannya. Jika tidak ada temuan, berikan rekomendasi pemeliharaan rutin.]</li>
-                    </ul>
-                `;
+                         <h4>5. Evaluasi Keberlanjutan</h4>
+                         <p>Penilaian sistem konservasi air (sumur resapan, biopori): [Evaluasi efektivitas fasilitas konservasi air berdasarkan SNI 8456:2017]. Rencana pemeliharaan: [Tinjau jadwal pembersihan rutin dari input].</p>
+
+                         <h4>6. Penyusunan Rekomendasi</h4>
+                         <p>Laporan hasil pemeriksaan: [Rangkum semua temuan utama].</p>
+                         <p>Rekomendasi Teknis:</p>
+                         <ul>
+                             <li>[Buat daftar rekomendasi konkret. Contoh: "Menambah 2 unit sumur resapan tipe A sesuai SNI 8456:2017." atau "Melakukan pembersihan rutin saluran drainase setiap 3 bulan."].</li>
+                         </ul>
+
+                         <h4>7. Validasi & Laporan</h4>
+                         <p>Laporan ini disusun sebagai bagian dari pemeriksaan teknis bangunan untuk pemenuhan SLF dan mendukung konsep Zero Run-off serta Sertifikasi Bangunan Gedung Hijau.</p>
+                         
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 8456:2017: Sumur dan parit resapan air hujan</li>
+                             <li>SNI 2415:2009: Tata cara perhitungan debit banjir rencana</li>
+                             <li>Permen PUPR No. 16/PRT/M/2010: Pedoman persyaratan teknis bangunan gedung</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-7') {
+                        prompt = `
+                         Anda adalah seorang Ahli Pengelolaan Limbah Padat (Solid Waste Management) dan Teknik Lingkungan. Tugas Anda adalah menyusun laporan teknis pemeriksaan sistem pengelolaan sampah yang komprehensif, mengikuti metodologi yang sistematis dan standar teknis yang berlaku di Indonesia.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Neraca Sampah"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti 5 tahap pemeriksaan sistematis. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan dengan jelas "Data tidak memadai, diperlukan verifikasi/pengukuran lapangan" dan jelaskan tindakan yang diperlukan. Selalu rujuk standar yang relevan.
+
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>Tahap 1: Persiapan & Studi Dokumen</h4>
+                         <p>Identifikasi jenis bangunan dan kapasitas okupansi: [Analisis data dari input]. Pengumpulan data terkait sumber timbulan sampah dan denah TPS: [Evaluasi kelengkapan dokumen]. Verifikasi kesesuaian desain dengan peraturan teknis (Permen PU No. 03/PRT/M/2013): [Verifikasi awal terhadap standar].</p>
+
+                         <h4>Tahap 2: Analisis Sistem Internal (Pewadahan & Pengumpulan)</h4>
+                         <p>Evaluasi jenis dan kapasitas tempat sampah di setiap sumber (kantor, pantry, dll.): [Deskripsikan sistem pewadahan internal]. Analisis jalur pengumpulan sampah dari sumber ke TPS: [Deskripsikan alur dan frekuensi pengumpulan].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>Tahap 3: Analisis Sistem Eksternal (TPS & Pengangkutan)</h4>
+                         <p>Evaluasi kapasitas dan desain TPS (Tempat Penampungan Sementara): [Analisis ukuran, pemilahan (organik, anorganik, B3), dan kelengkapan TPS sesuai SNI 3242:2008]. Tinjau mekanisme pengangkutan sampah ke TPA (Tempat Pemrosesan Akhir): [Jelaskan frekuensi dan pihak yang bertanggung jawab].</p>
+
+                         <h4>Tahap 4: Perhitungan Neraca Sampah</h4>
+                         <p>Estimasi timbulan sampah harian:</p>
+                         <table>
+                             <thead><tr><th>Sumber Sampah</th><th>Okupansi/Unit</th><th>Standar Timbulan (L/org/hari atau L/unit/hari)</th><th>Estimasi Volume (L/hari)</th></tr></thead>
+                             <tbody><tr><td>[Contoh: Area Kantor]</td><td>[Data okupansi]</td><td>[Standar SNI 19-3964-1994]</td><td>[Hasil kalkulasi]</td></tr></tbody>
+                         </table>
+                         <p>Perbandingan volume sampah harian dengan kapasitas TPS: [Bandingkan hasil perhitungan dengan kapasitas TPS yang ada. Nyatakan apakah 'Memadai' atau 'Kurang Memadai'].</p>
+
+                         <h4>Tahap 5: Rekomendasi & Rencana Tindak Lanjut</h4>
+                         <p>Daftar temuan dan potensi risiko: [Rangkum semua ketidaksesuaian dan risiko sanitasi/lingkungan].</p>
+                         <p>Rekomendasi Teknis:</p>
+                         <ul>
+                             <li>[Buat daftar rekomendasi konkret. Contoh: "Menambah kapasitas TPS sebesar 2 m³ untuk mengakomodasi volume sampah akhir pekan." atau "Menerapkan program pemilahan sampah 3R (Reduce, Reuse, Recycle) di setiap unit kerja."].</li>
+                             <li>[Susun usulan SOP pengelolaan sampah internal].</li>
+                         </ul>
+
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 19-3964-1994: Metode pengambilan dan pengukuran contoh timbulan dan komposisi sampah perkotaan</li>
+                             <li>SNI 3242:2008: Pengelolaan sampah di permukiman</li>
+                             <li>Permen PU No. 03/PRT/M/2013: Penyelenggaraan prasarana dan sarana persampahan</li>
+                             <li>UU No. 18 Tahun 2008: Pengelolaan Sampah</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-6') {
+                     prompt = `
+                         Anda adalah seorang Ahli Teknik Sanitasi dan Lingkungan yang sangat kompeten. Tugas Anda adalah menyusun laporan teknis pemeriksaan sistem air kotor/limbah yang komprehensif, mengikuti metodologi yang sistematis dan standar teknis yang berlaku di Indonesia.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Neraca Air Kotor/Limbah"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti 5 tahap pemeriksaan sistematis. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan dengan jelas "Data tidak memadai, diperlukan verifikasi/pengukuran lapangan" dan jelaskan tindakan yang diperlukan. Selalu rujuk standar yang relevan.
+
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>Tahap 1: Persiapan & Studi Dokumen</h4>
+                         <p>Identifikasi jenis bangunan dan kapasitas okupansi: [Analisis data dari input]. Kelengkapan gambar kerja plumbing dan detail sistem limbah: [Evaluasi kelengkapan dokumen]. Kesesuaian desain dengan peraturan teknis: [Verifikasi awal terhadap standar].</p>
+
+                         <h4>Tahap 2: Analisis Sistem Internal</h4>
+                         <p>Penelusuran jalur pipa air kotor dan air bekas: [Deskripsikan sistem perpipaan internal berdasarkan data]. Evaluasi kapasitas pipa berdasarkan fixture unit (FU) sesuai SNI 8153:2015: [Sajikan perhitungan FU jika data memungkinkan]. Evaluasi posisi vent, floor trap, dan akses manhole: [Analisis berdasarkan input].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>Tahap 3: Analisis Sistem Eksternal & Pembuangan</h4>
+                         <p>Sistem pengolahan akhir limbah: [Identifikasi jenisnya: Septic tank, bio-septic, atau IPAL]. Pemisahan air kotor dan air hujan: [Verifikasi berdasarkan data]. Titik pembuangan akhir: [Identifikasi apakah ke SPAL kota atau peresapan].</p>
+
+                         <h4>Tahap 4: Verifikasi Baku Mutu dan Perizinan</h4>
+                         <p>Hasil uji laboratorium (pH, BOD, COD, TSS): [Laporkan hasil uji jika ada, bandingkan dengan baku mutu Permen LHK P.68/2016. Jika tidak ada, rekomendasikan pengujian]. Status perizinan (SPAL, SLF, AMDAL/UKL-UPL): [Verifikasi kelengkapan izin dari input].</p>
+
+                         <h4>Tahap 5: Rekomendasi & Rencana Tindak Lanjut</h4>
+                         <p>Daftar temuan dan potensi risiko: [Rangkum semua ketidaksesuaian dan risiko sanitasi].</p>
+                         <p>Rekomendasi Teknis:</p>
+                         <ul>
+                             <li>[Buat daftar rekomendasi konkret. Contoh: "Melakukan 'jetting' pada jalur pipa utama untuk membersihkan sumbatan." atau "Mengajukan permohonan Izin Pembuangan Air Limbah (IPAL) ke dinas terkait."].</li>
+                             <li>[Susun usulan SOP pemeliharaan berkala sistem limbah].</li>
+                         </ul>
+
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 8153:2015: Sistem plambing air limbah dan ventilasinya</li>
+                             <li>Permen LHK No. P.68/MENLHK/2016: Baku mutu air limbah domestik</li>
+                             <li>SNI 2398:2017: Persyaratan desain septic tank</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-5') {
+                     prompt = `
+                         Anda adalah seorang Ahli Teknik Sanitasi dan Plambing profesional. Tugas Anda adalah menyusun laporan teknis pemeriksaan sistem air bersih yang komprehensif, mengikuti metodologi yang sistematis dan standar teknis yang berlaku di Indonesia.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Neraca Air Bersih"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti 9 tahapan pemeriksaan sistematis. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan dengan jelas "Data tidak memadai, diperlukan verifikasi/pengukuran lapangan" dan jelaskan tindakan yang diperlukan. Selalu rujuk standar yang relevan.
+
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>1. Studi Awal</h4>
+                         <p>Dokumen yang ditelaah dan informasi kebutuhan air awal: [Analisis kelengkapan dokumen dari input dan informasi kebutuhan air].</p>
+
+                         <h4>2. Verifikasi Gambar & Spesifikasi</h4>
+                         <p>Kesesuaian gambar rencana dengan kondisi lapangan: [Bandingkan data dari dokumen dengan catatan lapangan, identifikasi deviasi].</p>
+
+                         <h4>3. Hitungan Kebutuhan Air</h4>
+                         <p>Perhitungan kebutuhan air (liter/orang/hari) berdasarkan fungsi dan okupansi gedung:</p>
+                         <table>
+                             <thead><tr><th>Fungsi/Area</th><th>Okupansi (orang)</th><th>Kebutuhan (L/org/hari)</th><th>Total Kebutuhan (L/hari)</th></tr></thead>
+                             <tbody><tr><td>[Contoh: Kantor]</td><td>[Data okupansi]</td><td>[Standar SNI 03-7065-2005]</td><td>[Hasil kalkulasi]</td></tr></tbody>
+                         </table>
+
+                         <h4>4. Evaluasi Sumber Air</h4>
+                         <p>Sumber air utama: [Sebutkan sumber air, cth: PDAM/Sumur Dalam]. Penilaian debit, kualitas, dan kontinuitas: [Evaluasi berdasarkan data yang ada. Rujuk Permenkes No. 32 Tahun 2017].</p>
+
+                         <h4>5. Pemeriksaan Sistem Distribusi</h4>
+                         <p>Inspeksi jalur perpipaan, tangki (GWT, Roof Tank), dan sistem pompa: [Deskripsikan kondisi sistem distribusi dari input, termasuk potensi kebocoran atau masalah tekanan].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>6. Uji Teknis & Sampling</h4>
+                         <p>Hasil uji kualitas air (jika ada): [Laporkan hasil uji laboratorium. Jika tidak ada, nyatakan "Tidak ada data uji kualitas air, direkomendasikan sampling dan pengujian di laboratorium terakreditasi."].</p>
+
+                         <h4>7. Pemeriksaan Sistem Backup</h4>
+                         <p>Kondisi sistem cadangan (tangki buffer, sumur bor): [Evaluasi keberadaan dan kesiapan sistem cadangan].</p>
+
+                         <h4>8. Audit Keselamatan & Pemeliharaan</h4>
+                         <p>Proteksi dan aksesibilitas sistem perpipaan: [Deskripsikan kondisi proteksi pipa dan kemudahan akses untuk pemeliharaan].</p>
+
+                         <h4>9. Pelaporan & Rekomendasi</h4>
+                         <p>Kesimpulan: [Rangkum temuan utama dari pemeriksaan sistem air bersih].</p>
+                         <p>Rekomendasi:</p>
+                         <ul>
+                             <li>[Buat daftar rekomendasi konkret. Contoh: "Melakukan pembersihan (flushing) tangki atap secara berkala setiap 6 bulan." atau "Melakukan uji kualitas air lengkap sesuai Permenkes No. 32 Tahun 2017."].</li>
+                         </ul>
+                         
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 03-7065-2005 – Tata cara perencanaan sistem plambing gedung</li>
+                             <li>Permenkes No. 32 Tahun 2017 – Tentang standar baku mutu kualitas air</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-4') {
+                     prompt = `
+                         Anda adalah seorang ahli Lighting Designer dan Electrical Engineer yang bersertifikat. Tugas Anda adalah menyusun laporan teknis pemeriksaan sistem pencahayaan gedung yang komprehensif, mengikuti metodologi sistematis dan standar teknis yang berlaku.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Perhitungan Sistem Pencahayaan"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti semua tahap pemeriksaan pencahayaan (A sampai F). Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan dengan jelas "Data tidak memadai, diperlukan survei/pengukuran lapangan" dan jelaskan tindakan yang diperlukan. Selalu rujuk standar yang relevan di setiap evaluasi.
+
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>A. TAHAP PERSIAPAN</h4>
+                         <p>Ruang lingkup pemeriksaan: [Sebutkan area yang diperiksa dari input]. Dokumen teknis yang ditelaah: [Sebutkan dokumen yang ada].</p>
+
+                         <h4>B. PEMERIKSAAN PENCAHAYAAN ALAMI</h4>
+                         <p>Analisis orientasi dan bukaan: [Deskripsikan orientasi dan bukaan berdasarkan data]. Perhitungan Daylight Factor (DF): [Sajikan hasil perhitungan DF jika ada data, atau sebutkan "Perlu simulasi untuk menghitung DF."]. Evaluasi shading dan reflektansi: [Analisis singkat]. Perbandingan dengan standar (min. 2% untuk ruang kerja - SNI 03-6575-2001): [Bandingkan hasil DF dengan standar].</p>
+
+                         <h4>C. PEMERIKSAAN PENCAHAYAAN BUATAN</h4>
+                         <p>Verifikasi instalasi: [Deskripsikan jenis armatur dan sistem kontrol dari input]. Hasil pengukuran iluminasi (lux):</p>
+                         <table>
+                             <thead><tr><th>Zona/Ruang</th><th>Iluminasi Aktual (lux)</th><th>Standar (lux)</th><th>Kesesuaian</th></tr></thead>
+                             <tbody><tr><td>[Contoh: Area Kerja]</td><td>[Data dari lux meter]</td><td>300–500</td><td>[Sesuai/Tidak Sesuai]</td></tr></tbody>
+                         </table>
+                         <p>Evaluasi efisiensi energi: [Analisis data efisiensi (lm/W) dan CRI jika tersedia].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>D. PEMERIKSAAN AREA LUAR BANGUNAN</h4>
+                         <p>Analisis pencahayaan eksterior: [Deskripsikan temuan untuk pencahayaan luar, termasuk potensi polusi cahaya atau silau].</p>
+
+                         <h4>E. EVALUASI SISTEM PENUNJANG</h4>
+                         <p>Verifikasi pencahayaan darurat: [Evaluasi kondisi pencahayaan darurat dan jalur evakuasi, rujuk SNI 03-1735-2000]. Integrasi sistem: [Sebutkan jika ada integrasi dengan smart lighting atau panel surya].</p>
+
+                         <h4>F. PENILAIAN & PELAPORAN</h4>
+                         <p>Kesimpulan: [Rangkum semua temuan utama dari pemeriksaan].</p>
+                         <p>Rekomendasi:</p>
+                         <ul>
+                             <li>[Buat daftar rekomendasi konkret. Contoh: "Mengganti lampu TL konvensional dengan LED untuk efisiensi energi." atau "Menambah titik lampu di koridor untuk memenuhi standar 150 lux."].</li>
+                         </ul>
+
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 03-6197-2000: Tata cara perancangan sistem pencahayaan buatan</li>
+                             <li>SNI 03-6575-2001: Tata cara perancangan pencahayaan alami</li>
+                             <li>SNI 6390:2020: Audit energi pada bangunan gedung</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-3') {
+                     prompt = `
+                         Anda adalah seorang ahli Teknik Fisika Bangunan dan spesialis HVAC (Heating, Ventilation, and Air Conditioning) yang sangat terkemuka. Tugas Anda adalah menyusun laporan teknis pemeriksaan sistem penghawaan yang komprehensif, mengikuti metodologi yang sistematis dan standar teknis yang berlaku di Indonesia.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Perhitungan Sistem Penghawaan"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti 10 langkah pemeriksaan sistem penghawaan secara ketat. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada untuk suatu langkah, nyatakan dengan jelas "Data tidak memadai, diperlukan survei/pengukuran lapangan" dan jelaskan tindakan yang diperlukan. Selalu rujuk standar yang relevan di setiap evaluasi.
+
+                         Struktur Laporan Wajib (ikuti 10 langkah ini):
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>Langkah 1: Studi Dokumen Desain</h4>
+                         <p>Analisis gambar arsitektur dan MEP: [Uraikan jenis sistem ventilasi yang teridentifikasi dari dokumen (alami, mekanik, atau hibrida)].</p>
+
+                         <h4>Langkah 2: Survei Lapangan dan Audit Visual</h4>
+                         <p>Dokumentasi sistem ventilasi aktual: [Deskripsikan temuan visual dari input/dokumen, seperti kondisi bukaan jendela, exhaust fan, AHU, dll.].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>Langkah 3: Pengumpulan Data Iklim dan Lingkungan</h4>
+                         <p>Data cuaca lokal (suhu, kelembaban): [Sebutkan data iklim relevan jika ada di input, jika tidak, nyatakan "Menggunakan data iklim referensi untuk [Lokasi Gedung]"].</p>
+
+                         <h4>Langkah 4: Inventarisasi Aktivitas Ruang dan Okupansi</h4>
+                         <p>Tingkat kebutuhan udara segar: [Analisis aktivitas ruang dan jumlah penghuni (okupansi) dari input untuk menentukan kebutuhan udara segar per orang].</p>
+
+                         <h4>Langkah 5: Pengukuran Kinerja Aktual Penghawaan</h4>
+                         <p>Hasil pengukuran (jika tersedia): [Laporkan data dari anemometer, termohigrometer, atau CO₂ meter jika ada di input. Jika tidak, nyatakan "Tidak ada data pengukuran aktual, direkomendasikan pengujian di tempat."].</p>
+
+                         <h4>Langkah 6: Perhitungan Kebutuhan Udara Segar per Ruang</h4>
+                         <p>Perhitungan berdasarkan SNI 03-6572-2001: [Tampilkan tabel perhitungan kebutuhan udara segar (CFM atau L/s) untuk beberapa ruang sampel berdasarkan fungsi dan okupansi].</p>
+                         <table>
+                             <thead><tr><th>Ruang</th><th>Okupansi (orang)</th><th>Kebutuhan Udara Segar per Orang (L/s)</th><th>Total Kebutuhan (L/s)</th></tr></thead>
+                             <tbody><tr><td>[Contoh: Ruang Kerja]</td><td>[Data dari input]</td><td>[Standar, cth: 10]</td><td>[Hasil kalkulasi]</td></tr></tbody>
+                         </table>
+
+                         <h4>Langkah 7: Evaluasi Efisiensi Sistem HVAC (jika ada)</h4>
+                         <p>Analisis konsumsi energi: [Evaluasi data konsumsi listrik sistem HVAC dari input. Jika tidak ada, sebutkan "Perlu dilakukan audit energi pada sistem HVAC."].</p>
+
+                         <h4>Langkah 8: Evaluasi Terpadu Ventilasi</h4>
+                         <p>Perbandingan kondisi aktual dengan standar: [Bandingkan hasil pengukuran (Langkah 5) dengan kebutuhan perhitungan (Langkah 6). Evaluasi terhadap kenyamanan termal dan kesehatan sesuai Permen PUPR No. 10 Tahun 2021].</p>
+
+                         <h4>Langkah 9: Rekomendasi Perbaikan Sistem</h4>
+                         <p>Rekomendasi: [Berikan rekomendasi teknis yang jelas jika ditemukan ketidaksesuaian. Contoh: "Menambah unit exhaust fan di area toilet" atau "Melakukan balancing ulang pada sistem AHU."].</p>
+                         
+                         <h4>Langkah 10: Penyusunan Laporan Pemeriksaan</h4>
+                         <p>Laporan ini merangkum hasil audit sistem penghawaan sebagai bagian dari pemeriksaan teknis bangunan untuk pemenuhan standar kelaikan fungsi.</p>
+
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 03-6572-2001 - Tata Cara Perancangan Sistem Ventilasi dan Pengkondisian Udara</li>
+                             <li>Permen PUPR No. 10 Tahun 2021 tentang Standar Teknis SLF</li>
+                             <li>Standar ASHRAE (jika relevan)</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-1') {
+                     prompt = `
+                         Anda adalah seorang ahli arsitektur dan Building Code Analyst yang bersertifikat. Tugas Anda adalah membuat laporan teknis pemeriksaan okupansi yang sistematis dan detail berdasarkan data yang diberikan.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Kalkulator Okupansi"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti metodologi pemeriksaan okupansi secara ketat. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan "Data tidak tersedia, perlu verifikasi/pengukuran lebih lanjut". Selalu rujuk standar yang relevan di setiap evaluasi.
+
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>Langkah 1: Kajian Awal dan Telaah Dokumen</h4>
+                         <p>Verifikasi kelengkapan dokumen (gambar kerja, IMB/PBG): [Analisis kelengkapan dokumen dari input]. Identifikasi fungsi setiap ruang berdasarkan blueprint: [Sebutkan fungsi ruang yang teridentifikasi]. Perbandingan data desain dengan penggunaan aktual: [Evaluasi kesesuaian].</p>
+
+                         <h4>Langkah 2: Pengukuran Luas dan Volume Ruang</h4>
+                         <p>Luas efektif (netto) ruang: [Sajikan data luas dari input/dokumen, atau nyatakan perlu diukur]. Volume ruang dan tinggi efektif: [Sajikan data volume jika ada, atau nyatakan perlu diukur].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>Langkah 3: Klasifikasi Fungsi Ruang</h4>
+                         <p>Klasifikasi ruang berdasarkan SNI 03-1733-2004: [Klasifikasikan ruang yang dianalisis, cth: Kantor, Ruang Rapat, Koridor].</p>
+
+                         <h4>Langkah 4: Perhitungan Okupansi Maksimum</h4>
+                         <p>Perhitungan jumlah maksimum orang berdasarkan luas efektif dan standar okupansi (m²/orang):</p>
+                         <table>
+                             <thead>
+                                 <tr>
+                                     <th>Ruang</th>
+                                     <th>Luas Efektif (m²)</th>
+                                     <th>Standar (m²/orang)</th>
+                                     <th>Okupansi Maksimum Desain</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <tr>
+                                     <td>[Contoh: Ruang Kantor Terbuka]</td>
+                                     <td>[Data luas dari input]</td>
+                                     <td>[Rujuk SNI 03-1733-2004, cth: 4.65]</td>
+                                     <td>[Hasil perhitungan: Luas / Standar]</td>
+                                 </tr>
+                             </tbody>
+                         </table>
+
+                         <h4>Langkah 5: Evaluasi Sistem Evakuasi dan Sirkulasi</h4>
+                         <p>Analisis kecukupan sarana evakuasi (pintu, tangga, koridor) terhadap okupansi maksimum: [Evaluasi berdasarkan data yang ada, rujuk SNI 03-1746-2000]. Perkiraan waktu evakuasi: [Jika ada data, analisis. Jika tidak, sebutkan "Perlu simulasi evakuasi lebih lanjut."].</p>
+
+                         <h4>Langkah 6: Pemeriksaan Aktual di Lapangan</h4>
+                         <p>Hasil observasi/penghitungan aktual jumlah pengguna: [Sajikan data dari input jika ada, jika tidak nyatakan "Perlu dilakukan penghitungan aktual di lapangan."].</p>
+
+                         <h4>Langkah 7: Analisis Risiko dan Rekomendasi</h4>
+                         <p>Perbandingan okupansi aktual dengan okupansi maksimum desain: [Bandingkan data dari Langkah 4 & 6]. Potensi risiko (cth: overcrowding): [Identifikasi risiko jika aktual > maksimum].</p>
+
+                         <h4>Langkah 8: Dokumentasi dan Pelaporan</h4>
+                         <ul>
+                             <li>[Buat poin-poin kesimpulan dari analisis di atas].</li>
+                             <li>Rekomendasi Teknis/Administratif: [Berikan rekomendasi konkret, cth: "Membatasi jumlah pengguna di Ruang Rapat menjadi maksimal 15 orang sesuai perhitungan." atau "Menambah rambu evakuasi."].</li>
+                         </ul>
+
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>SNI 03-1733-2004 tentang Tata Cara Perencanaan Lingkungan dalam Bangunan Gedung</li>
+                             <li>SNI 03-1746-2000 tentang Tata Cara Perencanaan Jalur Evakuasi</li>
+                             <li>PP No. 16 Tahun 2021</li>
+                         </ul>
+                     `;
+                 } else if (itemId === 'kt-2') {
+                     prompt = `
+                         Anda adalah seorang ahli pemeriksa instalasi listrik gedung (certified electrical inspector) yang sangat berpengalaman. Tugas Anda adalah membuat laporan teknis yang detail dan profesional untuk item "Neraca Kelistrikan" berdasarkan data yang diberikan.
+
+                         ${buildingContext}
+
+                         Data Pemeriksaan:
+                         - Item: "Neraca Kelistrikan"
+                         - Kondisi Eksisting / Catatan Lapangan / Dokumen: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file terlampir yang harus dianalisis.` : 'Tidak ada.'}
+
+                         Instruksi Utama:
+                         Buat laporan dalam format HTML (hanya konten di dalam <div>) yang mengikuti metodologi pemeriksaan sistem kelistrikan secara sistematis. Gunakan informasi dari "Kondisi Eksisting" dan dokumen terlampir untuk mengisi setiap tahapan. Jika data tidak ada, nyatakan "Data tidak tersedia, perlu inspeksi/pengujian lebih lanjut". Selalu rujuk standar yang relevan di setiap evaluasi.
+
+                         Struktur Laporan Wajib:
+                         <h4>RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>1. Persiapan Pemeriksaan</h4>
+                         <p>Dokumen teknis yang diterima (Single Line Diagram, As-Built, dll.): [Analisis kelengkapan dokumen dari input]. Standar rujukan utama yang digunakan: [Sebutkan standar dari daftar di bawah]. Checklist dan alat ukur yang relevan: [Sebutkan alat seperti Insulation Tester, Earth Tester, Clamp Meter].</p>
+
+                         <h4>2. Pemeriksaan Visual</h4>
+                         <p>Kondisi visual panel, kabel, jalur darurat, dan grounding: [Deskripsikan temuan dari input/dokumen, seperti kebersihan, label, potensi overload, atau kerusakan fisik].</p>
+                         ${imagePlaceholderInstruction}
+
+                         <h4>3. Verifikasi Kesesuaian Data vs. Fisik</h4>
+                         <p>Perbandingan antara As-Built/SLD dengan kondisi aktual di lapangan: [Evaluasi kesesuaian spesifikasi panel, kabel, dan proteksi berdasarkan data yang ada].</p>
+
+                         <h4>4. Pengujian Teknis (Berdasarkan Data)</h4>
+                         <p>Analisis hasil pengujian yang tersedia: [Jika ada data uji di input, analisis di sini. Contoh: "Resistansi isolasi kabel utama X adalah Y MΩ, sesuai standar PUIL >1 MΩ." Jika tidak ada, sebutkan "Tidak ada data pengujian, direkomendasikan untuk melakukan Insulation Resistance Test, Earth Resistance Test, dan uji kelistrikan darurat."].</p>
+
+                         <h4>5. Evaluasi Efisiensi Energi</h4>
+                         <p>Analisis beban dan konsumsi energi: [Analisis data beban puncak atau konsumsi energi dari input. Bandingkan dengan benchmark jika memungkinkan. Jika tidak ada data, sarankan untuk melakukan audit energi].</p>
+
+                         <h4>6. Pemeriksaan Proteksi Petir</h4>
+                         <p>Kondisi sistem proteksi petir: [Deskripsikan kondisi konduktor dan grounding berdasarkan input. Rujuk ke SNI 03-7015].</p>
+
+                         <h4>7. Pengujian Koordinasi Proteksi</h4>
+                         <p>Evaluasi setelan proteksi: [Analisis kesesuaian setelan MCB/MCCB terhadap beban dari data yang ada. Jika tidak ada, sebutkan "Perlu dilakukan pengujian koordinasi proteksi untuk memastikan tidak ada miskoordinasi trip."].</p>
+                         
+                         <h4>8. Dokumentasi & Laporan Teknis</h4>
+                         <p>Laporan ini merangkum temuan pemeriksaan sistem kelistrikan gedung. Semua temuan didasarkan pada data yang disediakan dan standar yang berlaku.</p>
+
+                         <h4>9. Rekomendasi Tindak Lanjut</h4>
+                         <ul>
+                             <li>[Buat daftar rekomendasi konkret berdasarkan temuan di atas. Contoh: "Lakukan pengujian resistansi pentanahan ulang sesuai PUIL 2011." atau "Rapikan pelabelan pada panel SDP-02."].</li>
+                             <li>[Rekomendasikan jadwal pemeliharaan dan pemeriksaan berkala].</li>
+                         </ul>
+
+                         Referensi dan Standar yang Digunakan:
+                         <ul>
+                             <li>PUIL 2011 (Persyaratan Umum Instalasi Listrik)</li>
+                             <li>SNI IEC 60364-1:2015 Instalasi listrik tegangan rendah</li>
+                             <li>SNI 03-7015-2004 Sistem proteksi petir untuk bangunan gedung</li>
+                             <li>Permen ESDM No. 12 Tahun 2021 tentang Instalasi Pemanfaatan Tenaga Listrik</li>
+                             <li>UU No. 30 Tahun 2009 tentang Ketenagalistrikan</li>
+                         </ul>
+                     `;
+                 } else {
+                     prompt = `
+                         Anda adalah seorang ahli pengkaji bangunan gedung profesional di bidang rekayasa dan penyusunan laporan teknis untuk kelaikan fungsi bangunan gedung di Indonesia. Tugas Anda adalah membuat laporan kajian teknis yang terstruktur dan detail, Buatlah sebuah Laporan Hasil Pemeriksaan Komprehensif pada sebuah bangunan gedung. Laporan harus mengikuti struktur, format, gaya bahasa, dan kedalaman analisis seperti contoh laporan pemeriksaan struktur yang menjadi acuan. Gunakan data hipotetis yang realistis dan relevan untuk aspek yang diperiksa.
+
+                         ${buildingContext}
+                         ${legalBasisContext}
+
+                         Berdasarkan data berikut:
+                         - Aspek Kajian: "${appData[activeCategory].title}"
+                         - Item Pemeriksaan: "${itemData.name}"
+                         - Standar Acuan Awal: "${itemData.standard}"
+                         - Kondisi Eksisting / Catatan Lapangan: "${userInput}"
+                         - Dokumen Pendukung: ${files.length > 0 ? `Ada ${files.length} file yang diunggah.` : 'Tidak ada.'}
+
+                         Instruksi Utama: ${fileInstruction}
+
+                         Buatlah laporan kajian komprehensif dalam format HTML (hanya kode di dalam <div> utama, tanpa tag html/body). Laporan harus mengikuti struktur berikut:
+
+                         <h4>1. RINGKASAN EKSEKUTIF</h4>
+                         <p>[Sajikan paragraf pembuka yang menjelaskan tujuan pemeriksaan (evaluasi kelaikan fungsi untuk permohonan SLF).]</p>
+                         <p>[Jelaskan secara singkat metodologi pemeriksaan yang mencakup: (1) Pemeriksaan dokumen (PBG/IMB, gambar as-built sistem terkait), (2) Pemeriksaan dan pengujian fungsional di lapangan, (3) Analisis kesesuaian terhadap standar teknis (SNI terkait), dan (4) Penyajian temuan utama.]</p>
+                         <p>[Temuan Utama: Buat ringkasan temuan kunci. Contoh untuk sistem kebakaran: "Ditemukan beberapa kepala sprinkler yang terhalang partisi baru, tekanan pada hydrant box di lantai atas di bawah standar minimal, dan panel fire alarm menunjukkan adanya ground fault."]</p>
+                         <p>[Kesimpulan Kelaikan Fungsi: Nyatakan status kelaikan fungsi berdasarkan temuan. Contoh: "Dinyatakan Laik Fungsi dengan Rekomendasi Perbaikan karena sistem utama masih berfungsi namun terdapat defisiensi minor yang dapat mengurangi keandalan saat kondisi darurat."]</p>
+                         <p>[Rekomendasi Utama: Sebutkan 2-3 rekomendasi paling krusial. Contoh: "Kalibrasi ulang pompa jockey, relokasi kepala sprinkler yang terhalang, dan perbaikan panel fire alarm."]</p>
+                     
+                         <h4>2. PENDAHULUAN</h4>
+                         <p>[Komponen yang Diperiksa: Rincikan semua komponen yang diperiksa.]</p>
+                         <p>[Metodologi: Jelaskan tahapan pemeriksaan (pemeriksaan dokumen, inspeksi visual, pengujian fungsi, analisis standar).]</p>
+                     
+                         <h4>3. TABEL PERBANDINGAN</h4>
+                         <table>
+                             <thead>
+                                 <tr>
+                                     <th>Parameter</th>
+                                     <th>Kondisi Eksisting (Berdasarkan Dokumen & Catatan)</th>
+                                     <th>Ketentuan (NSPK)</th>
+                                     <th>Kesesuaian NSPK</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <tr>
+                                     <td>[Sub-parameter atau detail dari item pemeriksaan]</td>
+                                     <td>[Sajikan data dari file dan catatan secara ringkas.]</td>
+                                     <td>[Sebutkan peraturan relevan dari daftar Dasar Hukum yang diberikan, seperti PP 16/2021, SNI, atau lainnya beserta isinya dan sebutkan kesesuaiannya berapa/apa?. Selalu sebutkan sumber aturannya.]</td>
+                                     <td>[hasil kesimpulan sesuai/tidak sesuai dari kondisi eksisting dengan ketentuan (NSPK) apakah sudah sesuai dengan ketentuan yang berlaku?.]</td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                         <p>[paragraf ini untuk menampilkan coloumn chart/line chart/pie chart/Scatter dengan garis batasan sesuai ketentuan yang ada di tabel perbandingan.]</p>
+                     
+                         <h4>4. HASIL PEMERIKSAAN DOKUMEN (DOCUMENT REVIEW)</h4>
+                         <p>4.1. Verifikasi Kelengkapan Dokumen:</p>
+                         <p>[Buat tabel status kelengkapan dokumen (PBG/IMB, Gambar As-Built Sistem, Perhitungan Desain [misal: hidrolik hidran], Riwayat Pemeliharaan). Nyatakan jika ada dokumen yang "Tidak Ditemukan" atau "Tidak Lengkap".]</p>
+                         <p>4.2. Tinjauan Kriteria Desain:</p>
+                         <p>[Bandingkan desain pada gambar as-built dengan persyaratan standar. Identifikasi potensi kesenjangan. Contoh: "Desain awal sistem hidran mengacu pada standar lama dengan klasifikasi bahaya kebakaran ringan, padahal fungsi sebagai pusat konvensi menuntut klasifikasi bahaya sedang/berat yang memerlukan debit air lebih besar."]</p>
+
+                         <h4>5. HASIL PEMERIKSAAN DAN PENGUJIAN KONDISI LAPANGAN</h4>
+                         <p>5.1. Metodologi Pemeriksaan Lapangan:</p>
+                         <p>[Jelaskan metode yang digunakan (contoh: inspeksi visual, pengukuran tekanan & aliran, uji fungsional, simulasi alarm).]</p>
+                         <p>5.2. Hasil Pemeriksaan Komponen:</p>
+                         <p>[Uraikan temuan untuk setiap komponen dalam sub-bab terpisah. Gunakan data kuantitatif.]</p>
+                          ${imagePlaceholderInstruction}
+
+                         <h4>6. VERIFIKASI PERHITUNGAN MANUAL</h4>
+                         <p>[Buatlah perhitungan manual yang relevan lebih dari 1 perhitungan untuk memverifikasi aspek kunci dari [${itemData.name}]. Gunakan format berikut untuk setiap perhitungan:]</p>
+                         <p>[Judul Perhitungan]</p>
+                         <p>[Tujuan: (contoh Verifikasi kecukupan volume septic tank eksisting).]</p>
+                         <p>Data Teknis & Standar:</p>
+                         <p>[menampilkan data teknis dan standar dengan format poin]</p>
+                         <p>Langkah-langkah Perhitungan:</p>
+                         <p>[Tunjukkan rumus dan substitusi angka dengan jelas, contoh: Volume Air Limbah Harian = Jumlah Penghuni x Pemakaian Air]</p>
+                         <p>[contoh Tunjukkan perhitungan kebutuhan volume total berdasarkan periode pengurasan]</p>
+                         <p>Evaluasi Hasil:</p>
+                         <p>[Bandingkan hasil perhitungan V_butuh dengan V_eksisting.]</p>
+                         <p>[Analisis]</p>
+
+                         <h4>7. HASIL ANALISIS DAN EVALUASI KINERJA</h4>
+                         <p>[Paragraf yang menganalisa dan mengevaluasi secara mendalam hasil dari tabel perbandingan. Analisis kesesuaian antara kondisi eksisting dengan NSPK. Bab ini membandingkan temuan lapangan dengan persyaratan standar]</p>
+                         
+                         <h4>8. TEMUAN</h4>
+                         <ul>
+                             <li>[Poin temuan spesifik atau ketidaksesuaian yang paling signifikan berdasarkan Temuan Kritis/Mayor/Minor. Jika tidak ada, sebutkan "Tidak ditemukan ketidaksesuaian signifikan".]</li>
+                         </ul>
+                         
+                         <h4>9. KESIMPULAN DAN REKOMENDASI</h4>
+                         <p>9.1. Ringkasan Hasil Evaluasi dan Temuan Defisiensi:</p>
+                         <p>[Rangkum kembali semua temuan negatif dari bab-bab sebelumnya secara ringkas.]</p>
+                         <p>9.2. Pernyataan Kelaikan Fungsi:</p>
+                         <p>[Ulangi pernyataan dari Ringkasan Eksekutif dengan justifikasi yang lebih detail.]</P>
+                         <p>9.3. Rekomendasi Teknis:</p>
+                         <ul>
+                             <li>[Poin tindakan perbaikan yang jelas dan dapat ditindaklanjuti berdasarkan temuan Kritis/Mayor/Minor. Jelaskan cara perbaikan singkatnya dengan waktu penyelesaiannya. Jika tidak ada temuan, berikan rekomendasi pemeliharaan rutin.]</li>
+                         </ul>
+                         <p>10. Referensi dan Standar yang Digunakan:</p>
+                         <ul>
+                             <li>[Poin referensi yang digunakan.]</li>
+                         </ul>
+                     `;
+                 }
                 
                 const responseText = await callAI(prompt, fileDataArray);
                 loader.classList.add('hidden');
@@ -1069,74 +2160,15 @@
                     const converted = htmlDocx.asBlob(fullHtml);
                     saveAs(converted, `kajian-${itemData.name.replace(/\s+/g, '-')}.docx`);
                 } else {
-                    alert('Tidak ada hasil kajian untuk disimpan.');
+                    showToast('Tidak ada hasil kajian untuk disimpan.', true);
                 }
             }
 
-            // Handle "Analyze Denah"
-            const analyzeDenahBtn = e.target.closest('#analyze-denah-btn');
-            if (analyzeDenahBtn) {
-                if (appState.settings.apiProvider !== 'gemini') {
-                    alert('Fitur analisis file hanya didukung oleh Gemini. Silakan ubah penyedia AI di menu Pengaturan.');
-                    return;
-                }
-                const fileInput = document.getElementById('denah-file');
-                const scaleInput = document.getElementById('denah-scale');
-                const file = fileInput.files[0];
-
-                if (!file) {
-                    alert("Silakan pilih file gambar atau PDF denah terlebih dahulu.");
-                    return;
-                }
-
-                analyzeDenahBtn.disabled = true;
-                analyzeDenahBtn.innerHTML = '<div class="loader"></div> Menganalisis...';
-
-                try {
-                    const fileData = await getFilesAsBase64([file]);
-                    const scale = scaleInput.value.trim() || "tidak ditentukan (minta AI untuk mengasumsikan jika ada dimensi)";
-
-                    const prompt = `Anda adalah seorang tenaga ahli arsitek yang terkenal dan berpengalaman. Analisis file denah ini (bisa berupa dwg, gambar atau PDF) dengan skala ${scale}. Identifikasi setiap ruangan, setiap lantai, setiap massa bangunan dan perkirakan luasnya dalam meter persegi. Untuk data Luas Lantai dasar bangunan hanya gunakan pada lantai dasar, untuk luas total lantai jumlahkan semua luasan yang sudah dihitung. Kembalikan hasilnya dalam format JSON yang ketat, tanpa markdown atau teks tambahan. JSON harus memiliki kunci 'rincian_luas' (sebuah array objek dengan 'nama_bangunan', 'nama_ruang', 'perhitungan', 'luas_m2', dan 'sumber_gambar/keterang') dan 'luas_total' (sebuah angka, hitung total perlantai dan permassa bangunan, kemudian diakhir Total Luasan keseluruhan). Di dalam kunci 'perhitungan', jelaskan secara perhitungan bagaimana Anda mendapatkan luas tersebut (misal: "5m x 4m" atau "estimasi dari gambar").`;
-                    
-                    const responseText = await callAI(prompt, fileData);
-                    
-                    const match = responseText.match(/\{.*\}/s);
-                    if (!match) {
-                        throw new Error("Respons AI tidak mengandung format JSON yang valid.");
-                    }
-                    const jsonString = match[0];
-                    const data = JSON.parse(jsonString);
-
-                    const tableBody = document.getElementById('denah-table-body');
-                    tableBody.innerHTML = ''; // Clear previous results
-                    data.rincian_luas.forEach(ruang => {
-                        const row = `<tr>
-                            <td class="px-4 py-2 border-t border-slate-200">${ruang.nama_ruang}</td>
-                            <td class="px-4 py-2 border-t border-slate-200"><code>${ruang.perhitungan}</code></td>
-                            <td class="px-4 py-2 border-t border-slate-200">${ruang.luas_m2}</td>
-                        </tr>`;
-                        tableBody.innerHTML += row;
-                    });
-
-                    document.getElementById('db-9').value = data.luas_total;
-                    document.getElementById('denah-result-container').style.display = 'block';
-                    saveState(); // Save the updated total area
-                    alert('Analisis berhasil! Luas Total Lantai telah diperbarui.');
-
-                } catch (error) {
-                    console.error("Error parsing AI response for floor plan:", error);
-                    alert("AI tidak dapat menganalisis file dengan benar. Pastikan file jelas dan coba lagi.");
-                }
-
-                analyzeDenahBtn.disabled = false;
-                analyzeDenahBtn.innerHTML = 'Analisis File';
-            }
-            
             // Handle "Ekstrak Info" from document
             const ekstrakBtn = e.target.closest('.ekstrak-btn');
             if (ekstrakBtn) {
                  if (appState.settings.apiProvider !== 'gemini') {
-                    alert('Fitur analisis file hanya didukung oleh Gemini. Silakan ubah penyedia AI di menu Pengaturan.');
+                    showToast('Fitur analisis file hanya didukung oleh Gemini.', true);
                     return;
                 }
                 const itemId = ekstrakBtn.dataset.itemId;
@@ -1144,7 +2176,7 @@
                 const files = fileInput.files;
 
                 if (files.length === 0) {
-                    alert("Silakan pilih file gambar atau PDF dokumen terlebih dahulu.");
+                    showToast("Silakan pilih file gambar atau PDF dokumen terlebih dahulu.", true);
                     return;
                 }
 
@@ -1155,18 +2187,20 @@
                     const fileDataArray = await getFilesAsBase64(files);
                     const itemName = appData[activeCategory].items.find(i => i.id === itemId).name;
                     
-                    const prompt = `Anda adalah Tenaga ahli kajian bangunan profesional dan terkenal dengan kecerdasan yang luar biasa. Analisis semua file dokumen ini (bisa gambar atau PDF), yang merupakan dokumen untuk "${itemName}". Ekstrak dan gabungkan informasi kunci yang relevan dari semua dokumen menjadi satu ringkasan dalam format poin-poin.`;
+                    const prompt = `Analisis file dokumen ini, yang merupakan dokumen untuk "${itemName}". Ekstrak informasi kunci yang relevan dan sajikan dalam format poin-poin ringkas. Fokus pada data kuantitatif, spesifikasi teknis, dan kondisi yang disebutkan dalam dokumen.`;
                     
                     const responseText = await callAI(prompt, fileDataArray);
 
                     const kondisiTextarea = document.getElementById(`kondisi-${itemId}`);
                     kondisiTextarea.value = responseText;
-                    saveState(); // Save the extracted text
-                    alert('Informasi berhasil diekstrak dan dimasukkan ke kolom catatan.');
+                    // Manually trigger input event to save state
+                    kondisiTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    showToast('Informasi berhasil diekstrak dan dimasukkan ke kolom catatan.');
 
                 } catch (error) {
                     console.error("Error processing files:", error);
-                    alert("Gagal memproses file.");
+                    showToast("Gagal memproses file.", true);
                 }
 
                 ekstrakBtn.disabled = false;
@@ -1184,7 +2218,7 @@
                     saveState();
                     renderContent(); // Re-render to show the new item
                 } else {
-                    alert('Uraian peraturan tidak boleh kosong.');
+                    showToast('Uraian peraturan tidak boleh kosong.', true);
                 }
             }
 
@@ -1192,19 +2226,23 @@
             const deleteLegalBtn = e.target.closest('.delete-legal-btn');
             if (deleteLegalBtn) {
                 const index = parseInt(deleteLegalBtn.dataset.index, 10);
-                if (confirm('Apakah Anda yakin ingin menghapus dasar hukum ini?')) {
-                    appState.legalBasisCustom.splice(index, 1);
-                    saveState();
-                    renderContent(); // Re-render to remove the item
-                }
+                appState.legalBasisCustom.splice(index, 1);
+                saveState();
+                renderContent(); // Re-render to remove the item
             }
 
-            // Handle Generate Comprehensive Report
-            const generateReportBtn = e.target.closest('#generate-report-btn');
-            if (generateReportBtn) {
-                generateReportBtn.disabled = true;
-                document.getElementById('report-loader').classList.remove('hidden');
-                document.getElementById('report-preview-container').classList.add('hidden');
+            // Handle Generate Report by Chapter
+            const generateBabBtn = e.target.closest('.generate-bab-btn');
+            if (generateBabBtn) {
+                const bab = generateBabBtn.dataset.bab;
+                const reportLoader = document.getElementById('report-loader');
+                const reportPreviewContainer = document.getElementById('report-preview-container');
+                const reportPreview = document.getElementById('report-preview');
+                
+                reportLoader.classList.remove('hidden');
+                reportPreviewContainer.classList.remove('hidden');
+                generateBabBtn.disabled = true;
+                generateBabBtn.innerHTML = '<div class="loader"></div>';
 
                 const fullData = {
                     data_bangunan: appState.buildingInfo,
@@ -1215,63 +2253,238 @@
                     hasil_kajian: appState.geminiResults
                 };
 
-                const prompt = `
-                    Anda adalah seorang ahli pengkaji bangunan gedung profesional dan penulis laporan teknis di Indonesia. Tugas Anda adalah menyusun Laporan Teknis Komprehensif untuk Sertifikat Laik Fungsi (SLF) berdasarkan data JSON yang saya berikan.
+                let babPrompt = `Anda adalah seorang ahli pengkaji bangunan gedung profesional dan penyusunan laporan teknis untuk kelaikan fungsi bangunan gedung di Indonesia. Buatlah konten untuk bagian laporan berikut berdasarkan data yang disediakan. Format output harus dalam HTML (hanya konten di dalam div). Data Kajian: ${JSON.stringify(fullData, null, 2)}.`;
 
-                    Data Kajian:
-                    ${JSON.stringify(fullData, null, 2)}
+                switch(bab) {
+                    case '1':
+                        babPrompt += `\n\nBuatlah konten untuk :
+                        COVER, 
+                        KATA PENGANTAR, 
+                        DAFTAR ISI, 
+                        RINGKASAN EKSEKUTIF (ringkasan yang memuat identitas bangunan, maksud dan tujuan kajian, dasar hukum, metodologi pemeriksaan, uraian hasil pemeriksaan, rekomendasi teknis dan kesimpulan ), 
+                        BAB 1 - PENDAHULUAN (subbab: Latar Belakang (masalah umum ke masalah bangunan yang sedang dikaji, minimal dibuat 3 paragraf), Tujuan (dibuat poin), Ruang Lingkup dan Dasar Hukum dan Acuan) dan
+                        BAB 2 - PROFIL BANGUNAN (subbab: Informasi Umum bangunan, data teknis bangunan dan Perizinan dan Legalitas dengan format tabel).`;
+                        break;
+                    case '2':
+                        babPrompt += `\n\nBuatlah konten untuk :
+                        BAB 3 - METODOLOGI PEMERIKSAAN (subbab: Pendekatan Kajian(Metodologi pemeriksaan beserta penjelasan detail terkait alat NDT yang digunakan), Metode Penilaian dan Kriteria Evaluasi),
+                        BAB 4 - HASIL PEMERIKSAAN DAN ANALISIS (pemeriksaan: Aspek Administrasi, Aspek Tata Bangunan, Persyaratan Arsitektur, Persyaratan Keselematan, Persyaratan Kesehatan, Persyaratan Kenyamanan, dan Persyaratan Kemudahan).`;
+                        break;
+                    case '3':
+                        babPrompt += `\n\nBuatlah konten untuk :
+                        BAB 5 - KESIMPULAN (Kesimpulan Kelaikan Fungsi, Temuan dari semua pemeriksaan dan Rekomendasi hasil dari temuan),
+                        LAMPIRAN (buat daftar lampiran standar yang umum ada dalam laporan SLF.)`;
+                        break;
+                    case '4':
+                         babPrompt += `\n\nBuatlah konten untuk Laporan Kajian Komprehensif dan detail dari cover sampai Lampiran .`;
+                         break;
+                }
 
-                    Instruksi:
-                    Susunlah laporan lengkap dalam format HTML (hanya kode di dalam <div>, tanpa tag html/body) dengan sistematika berikut. Gunakan data yang disediakan untuk mengisi setiap bagian. Jika data tidak tersedia, tulis "[Data tidak tersedia]". Buat narasi yang koheren dan profesional.
+                const reportContent = await callAI(babPrompt);
+                reportPreview.innerHTML += reportContent + '<div class="page-break"></div>';
+                
+                reportLoader.classList.add('hidden');
+                generateBabBtn.disabled = false;
+                generateBabBtn.innerHTML = `✨ Generate Bab ${bab}`;
+            }
 
-                    SISTEMATIKA LAPORAN:
-                    <h1>COVER</h1>
-                    <p>[Buat judul cover profesional untuk: ${appState.buildingInfo['db-1'] || 'Nama Bangunan'}]</p>
-                    <div class="page-break"></div>
-                    <h1>KATA PENGANTAR</h1>
-                    <p>[Buat kata pengantar standar untuk laporan teknis SLF.]</p>
-                    <div class="page-break"></div>
-                    <h1>DAFTAR ISI</h1>
-                    <p>[Buat daftar isi terstruktur.]</p>
-                    <div class="page-break"></div>
-                    <h2>BAB 1 - GAMBARAN UMUM</h2>
-                    <h3>1.1 Latar Belakang</h3>
-                    <p>[Jelaskan latar belakang perlunya pemeriksaan kelaikan fungsi.]</p>
-                    <h3>1.2 Dasar Hukum</h3>
-                    <p>[Sajikan semua data dari "dasar_hukum" dalam format daftar.]</p>
-                    <h3>1.3 Data Bangunan Gedung</h3>
-                    <p>[Sajikan semua data dari "data_bangunan" dalam format tabel.]</p>
-                    <h3>1.4 Surat Pernyataan Kelaikan Fungsi</h3>
-                    <p>[Buat draf surat pernyataan standar.]</p>
-                    <div class="page-break"></div>
-                    <h2>BAB 2 - METODOLOGI DAN HASIL PEMERIKSAAN</h2>
-                    <h3>2.1 Metodologi Pemeriksaan</h3>
-                    <p>[Jelaskan metodologi pemeriksaan.]</p>
-                    <h3>2.2 Data Pelaksana Pemeriksaan</h3>
-                    <p>[Buat tabel placeholder untuk data tim ahli.]</p>
-                    <h3>2.3 Hasil Pemeriksaan Dokumen</h3>
-                    <p>[Rangkum hasil pemeriksaan dari Aspek Administrasi berdasarkan data "hasil_kajian".]</p>
-                    <h3>2.4 Hasil Pemeriksaan Kondisi Bangunan Gedung</h3>
-                    <p>[Rangkum temuan dari semua aspek teknis berdasarkan data "hasil_kajian".]</p>
-                    <div class="page-break"></div>
-                    <h2>BAB 3 - HASIL DAN KESIMPULAN</h2>
-                    <h3>3.1 Hasil Analisis dan Evaluasi</h3>
-                    <p>Berikut adalah analisis dan evaluasi hasil pemeriksaan:</p>
-                    [Untuk SETIAP item dalam "hasil_kajian", tampilkan kembali hasil analisis tersebut di sini, diurutkan per aspek.]
-                    <h3>3.2 Kesimpulan Kelaikan Fungsi</h3>
-                    <p>[Berdasarkan keseluruhan hasil, buat paragraf kesimpulan (LAIK FUNGSI / LAIK DENGAN REKOMENDASI / TIDAK LAIK).]</p>
-                    <h3>3.3 Rekomendasi</h3>
-                    <p>[Gabungkan semua rekomendasi dari setiap hasil analisis menjadi satu daftar terstruktur.]</p>
-                    <div class="page-break"></div>
-                    <h2>LAMPIRAN</h2>
-                    <p>[Buat daftar lampiran standar.]</p>
-                `;
+            // Handle Generate Daftar Temuan
+            const generateTemuanBtn = e.target.closest('#generate-temuan-btn');
+            if (generateTemuanBtn) {
+                const reportLoader = document.getElementById('report-loader');
+                const reportPreviewContainer = document.getElementById('report-preview-container');
+                const reportPreview = document.getElementById('report-preview');
+                reportLoader.classList.remove('hidden');
+                reportLoader.querySelector('p').textContent = "Menyusun Daftar Temuan...";
+                reportPreviewContainer.classList.remove('hidden');
+                generateTemuanBtn.disabled = true;
+                generateTemuanBtn.innerHTML = '<div class="loader"></div>';
 
-                const reportContent = await callAI(prompt);
-                document.getElementById('report-preview').innerHTML = reportContent;
-                document.getElementById('report-loader').classList.add('hidden');
-                document.getElementById('report-preview-container').classList.remove('hidden');
-                generateReportBtn.disabled = false;
+                try {
+                    const findings = [];
+                    for (const catKey in appData) {
+                        const category = appData[catKey];
+                        if (category.type === 'checklist') {
+                            for (const item of category.items) {
+                                const itemState = appState.checklistState[item.id];
+                                if (itemState && (itemState.status === 'Tidak Sesuai' || itemState.status === 'Perlu Perbaikan')) {
+                                    if (appState.geminiResults.hasOwnProperty(item.id)) {
+                                        findings.push({
+                                            itemId: item.id,
+                                            aspekKajian: category.title,
+                                            namaPemeriksaan: item.name,
+                                            htmlContent: appState.geminiResults[item.id] || "Kajian AI tidak menghasilkan teks, namun item ini ditandai sebagai temuan."
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (findings.length === 0) {
+                        throw new Error("Tidak ada temuan 'Tidak Sesuai' atau 'Perlu Perbaikan' yang sudah dikaji dengan AI.");
+                    }
+
+                    const prompt = `
+                        Anda adalah seorang auditor dan pengkaji teknis bangunan gedung yang sangat teliti. Tugas Anda adalah menganalisis serangkaian laporan hasil pemeriksaan (dalam format HTML) dan menyusunnya menjadi sebuah tabel "Daftar Temuan" yang terstruktur.
+
+                        Berikut adalah data temuan yang perlu dianalisis:
+                        ${JSON.stringify(findings, null, 2)}
+
+                        Untuk SETIAP temuan dalam data di atas, ekstrak informasi berikut dari 'htmlContent'-nya:
+                        1.  **Lokasi**: Di mana temuan ini ditemukan? (cth: "Lantai 5, Area Kantor", "Ruang Pompa", "Seluruh Koridor"). Jika tidak spesifik, tulis "Seluruh Area Terkait".
+                        2.  **Deskripsi Temuan (Kondisi Faktual)**: Jelaskan secara detail apa yang ditemukan di lapangan. Ini adalah deskripsi faktual dari masalahnya.
+                        3.  **Kriteria/Persyaratan yang berlaku**: Sebutkan standar, peraturan, atau kriteria desain yang dilanggar. Rujuk ke SNI, Permen, atau standar lain yang disebutkan dalam teks.
+                        4.  **Analisis Risiko/Dampak**: Apa konsekuensi atau dampak dari temuan ini? (cth: "Risiko korsleting dan kebakaran", "Mengurangi efektivitas evakuasi", "Potensi kegagalan struktur saat gempa").
+                        5.  **Tingkat Risiko**: Klasifikasikan risiko sebagai **Kritis**, **Mayor**, atau **Minor**.
+                            - **Kritis**: Berpotensi menyebabkan kegagalan bangunan, korban jiwa, atau kerugian besar. Memerlukan tindakan segera.
+                            - **Mayor**: Berdampak signifikan pada fungsi, keselamatan, atau keandalan sistem, namun tidak segera mengancam kegagalan total.
+                            - **Minor**: Ketidaksesuaian kecil yang tidak berdampak langsung pada keselamatan atau fungsi utama, seringkali bersifat administratif atau estetis.
+                        6.  **Rekomendasi Tindak Lanjut**: Apa yang harus dilakukan untuk memperbaiki temuan ini? Berikan rekomendasi yang jelas dan dapat ditindaklanjuti. Dan berikan jangka waktu penyelesaiannya.
+                        7.  **Referensi**: Sebutkan dokumen atau standar spesifik yang menjadi acuan (cth: "SNI 0225:2020", "Permen PUPR 27/2018").
+                        8.  **Dokumentasi**: Sebutkan jenis dokumentasi yang relevan (cth: "Foto Lapangan", "Gambar As-Built", "Hasil Uji Lab"). Jika tidak ada, tulis "Tidak Ada".
+
+                        **FORMAT OUTPUT YANG WAJIB DIIKUTI:**
+                        Kembalikan hasil HANYA dalam format JSON array. Setiap elemen dalam array adalah sebuah objek yang mewakili satu temuan. JANGAN sertakan markdown, penjelasan, atau teks lain di luar JSON.
+
+                        Contoh struktur JSON yang diinginkan:
+                        [
+                          {
+                            "kodeTemuan": "TEM-ADM-01",
+                            "lokasi": "Dokumen Proyek",
+                            "aspekKajian": "Aspek Administrasi",
+                            "deskripsiTemuan": "Dokumen As-Built Drawings untuk sistem MEP tidak ditemukan dalam arsip proyek.",
+                            "kriteria": "PP No. 16 Tahun 2021 mensyaratkan ketersediaan gambar terbangun (as-built drawings) sebagai bagian dari dokumentasi SLF.",
+                            "analisisRisiko": "Kesulitan dalam melakukan pemeliharaan, perbaikan, atau modifikasi sistem MEP di masa depan. Risiko kesalahan saat intervensi pada sistem eksisting.",
+                            "tingkatRisiko": "Mayor",
+                            "rekomendasi": "Segera lakukan survei dan pembuatan ulang As-Built Drawings untuk seluruh sistem MEP oleh konsultan yang kompeten.",
+                            "referensi": "PP No. 16 Tahun 2021",
+                            "dokumentasi": "Checklist Kelengkapan Dokumen"
+                          },
+                          {
+                            "kodeTemuan": "TEM-KSL-03",
+                            "lokasi": "Tangga Darurat, Sayap Barat",
+                            "aspekKajian": "Aspek Keselamatan",
+                            "deskripsiTemuan": "Pintu keluar tangga darurat di lantai dasar terhalang oleh tumpukan perabotan bekas sehingga tidak bisa dibuka penuh.",
+                            "kriteria": "SNI 03-1746-2000 tentang sarana jalan keluar menyatakan bahwa jalur evakuasi harus selalu bebas dari hambatan.",
+                            "analisisRisiko": "Menghambat atau memblokir total jalur evakuasi saat terjadi keadaan darurat (kebakaran, gempa), berpotensi menyebabkan korban jiwa.",
+                            "tingkatRisiko": "Kritis",
+                            "rekomendasi": "Segera bersihkan semua hambatan di depan pintu tangga darurat dan pasang rambu 'AREA INI HARUS BEBAS HAMBATAN'. Lakukan inspeksi harian.",
+                            "referensi": "SNI 03-1746-2000",
+                            "dokumentasi": "Foto Lapangan"
+                          }
+                        ]
+
+                        Pastikan 'kodeTemuan' dibuat secara unik untuk setiap temuan, dengan format "TEM-[3 Huruf Aspek]-[Nomor Urut]". Contoh: "TEM-ARS-01", "TEM-KES-01", "TEM-KES-02".
+                    `;
+
+                    const responseText = await callAI(prompt);
+                    const jsonString = responseText.substring(responseText.indexOf('['), responseText.lastIndexOf(']') + 1);
+                    const temuanData = JSON.parse(jsonString);
+
+                    appState.daftarTemuanResult = temuanData;
+                    saveState();
+
+                    const tableHtml = generateDaftarTemuanHTML(temuanData);
+                    reportPreview.innerHTML += tableHtml + '<div class="page-break"></div>';
+                    
+                } catch (error) {
+                    console.error("Error generating findings list:", error);
+                    showToast(`Gagal membuat daftar temuan: ${error.message}`, true);
+                } finally {
+                    reportLoader.classList.add('hidden');
+                    generateTemuanBtn.disabled = false;
+                    generateTemuanBtn.innerHTML = '📋 Generate Daftar Temuan';
+                }
+            }
+            
+            // Handle Export Temuan to XLSX
+            const exportTemuanBtn = e.target.closest('#export-temuan-xlsx');
+            if (exportTemuanBtn) {
+                const dataToExport = appState.daftarTemuanResult;
+                if (!dataToExport || dataToExport.length === 0) {
+                    showToast("Tidak ada data temuan untuk diekspor. Silakan generate terlebih dahulu.", true);
+                    return;
+                }
+
+                const headers = [
+                    "No.", "Kode Temuan", "Lokasi", "Aspek Kajian",
+                    "Deskripsi Temuan (Kondisi Faktual)", "Kriteria/Persyaratan yang berlaku",
+                    "Analisis Risiko/Dampak", "Tingkat Risiko (Kritis, Mayor, Minor)",
+                    "Rekomendasi Tindak Lanjut", "Referensi", "Dokumentasi"
+                ];
+
+                let xlsxData = [headers];
+
+                dataToExport.forEach((row, index) => {
+                    xlsxData.push([
+                        index + 1,
+                        row.kodeTemuan,
+                        row.lokasi,
+                        row.aspekKajian,
+                        row.deskripsiTemuan,
+                        row.kriteria,
+                        row.analisisRisiko,
+                        row.tingkatRisiko,
+                        row.rekomendasi,
+                        row.referensi,
+                        row.dokumentasi
+                    ]);
+                });
+
+                try {
+                    const ws = XLSX.utils.aoa_to_sheet(xlsxData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Daftar Temuan");
+
+                    const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'data-kajian';
+                    XLSX.writeFile(wb, `${buildingName}-daftar-temuan.xlsx`);
+                } catch (error) {
+                    console.error("Error exporting findings to XLSX:", error);
+                    showToast("Gagal membuat file XLSX untuk daftar temuan.", true);
+                }
+            }
+
+            const exportSimakBtn = e.target.closest('#export-simak-xlsx');
+             if (exportSimakBtn) {
+                // ... logic to collect data from the Daftar Simak form ...
+                // This is a simplified example. A full implementation would need to iterate through the form.
+                const simakData = appState.daftarSimakState;
+                const buildingInfo = appState.buildingInfo;
+                 const checklistState = appState.checklistState;
+                 const geminiResults = appState.geminiResults;
+                
+                let xlsxData = [
+                     ["FORM KAJIAN PEMERIKSAAN BANGUNAN GEDUNG - DAFTAR SIMAK"],
+                     [],
+                     ["K. IDENTITAS PEMILIK"],
+                     ["Nama Pemilik", buildingInfo['db-4'] || 'N/A'],
+                     ["Alamat Bangunan", buildingInfo['db-2'] || 'N/A'],
+                ];
+                
+                // You would continue to build the xlsxData array based on the complex structure
+                // of your Daftar Simak form, pulling from `simakData`, `checklistState`, etc.
+                
+                try {
+                    const ws = XLSX.utils.aoa_to_sheet(xlsxData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Daftar Simak");
+                    const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'data-kajian';
+                    XLSX.writeFile(wb, `${buildingName}-daftar-simak.xlsx`);
+                    showToast("Daftar Simak berhasil diekspor ke XLSX!");
+                } catch(error) {
+                    console.error("Error exporting Daftar Simak to XLSX:", error);
+                    showToast("Gagal mengekspor Daftar Simak.", true);
+                }
+            }
+
+
+            // Handle Clear Report
+            const clearReportBtn = e.target.closest('#clear-report-btn');
+            if (clearReportBtn) {
+                document.getElementById('report-preview').innerHTML = '';
+                appState.daftarTemuanResult = null;
+                saveState();
             }
 
             // Handle Save Settings
@@ -1282,14 +2495,68 @@
                 appState.settings.apiKey = document.getElementById('api-key-input').value;
                 appState.settings.reportHeader = document.getElementById('header-input').value;
                 appState.settings.reportFooter = document.getElementById('footer-input').value;
+                appState.settings.googleApiKey = document.getElementById('google-api-key-input').value;
+                appState.settings.googleClientId = document.getElementById('google-client-id-input').value;
+                appState.settings.oneDriveClientId = document.getElementById('onedrive-client-id-input').value;
                 
                 saveState();
                 
-                const toast = document.getElementById('toast-notification');
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
+                showToast("Pengaturan berhasil disimpan!");
+            }
+
+            // Handle XLSX Export for Denah Analysis
+            const exportXlsxBtn = e.target.closest('#export-denah-xlsx-btn');
+            if (exportXlsxBtn) {
+                const data = appState.denahAnalysisResult;
+                if (!data || !data.rincian_luas) {
+                    showToast("Tidak ada data analisis denah untuk diekspor.", true);
+                    return;
+                }
+
+                try {
+                    let xlsxData = [
+                        ["Massa Bangunan", "Lantai", "Nama Ruang", "Perhitungan", "Luas (m²)"]
+                    ];
+
+                    data.rincian_luas.forEach(row => {
+                        xlsxData.push([
+                            row.massa || 'Utama',
+                            row.lantai || 'N/A',
+                            row.nama_ruang,
+                            row.perhitungan,
+                            parseFloat(row.luas_m2)
+                        ]);
+                    });
+
+                    if (data.total_luas_lantai) {
+                        xlsxData.push([]); // Add a spacer row
+                        data.total_luas_lantai.forEach(total => {
+                            xlsxData.push([
+                                `Total Luas ${total.massa || ''} - ${total.lantai || ''}`, '', '', '',
+                                parseFloat(total.total_luas_m2)
+                            ]);
+                        });
+                    }
+                    
+                    if (data.grand_total_luas_m2) {
+                        xlsxData.push([]); // Add a spacer row
+                        xlsxData.push([
+                            "GRAND TOTAL LUAS BANGUNAN", '', '', '',
+                            parseFloat(data.grand_total_luas_m2)
+                        ]);
+                    }
+
+                    const ws = XLSX.utils.aoa_to_sheet(xlsxData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Analisis Luas Denah");
+
+                    const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'analisis-denah';
+                    XLSX.writeFile(wb, `${buildingName}-luas.xlsx`);
+
+                } catch (error) {
+                    console.error("Error exporting to XLSX:", error);
+                    showToast("Gagal membuat file XLSX.", true);
+                }
             }
         });
 
@@ -1299,12 +2566,13 @@
                 const file = e.target.files[0];
                 if (file) {
                     const fileData = await getFilesAsBase64([file]);
+                    const dataUrl = `data:${fileData[0].mimeType};base64,${fileData[0].base64}`;
                     if (e.target.id === 'logo-input') {
-                        appState.settings.companyLogo = `data:${fileData[0].mimeType};base64,${fileData[0].base64}`;
-                        document.getElementById('logo-preview').src = appState.settings.companyLogo;
+                        appState.settings.companyLogo = dataUrl;
+                        document.getElementById('logo-preview').src = dataUrl;
                     } else {
-                        appState.settings.coverImage = `data:${fileData[0].mimeType};base64,${fileData[0].base64}`;
-                        document.getElementById('cover-preview').src = appState.settings.coverImage;
+                        appState.settings.coverImage = dataUrl;
+                        document.getElementById('cover-preview').src = dataUrl;
                     }
                     saveState();
                 }
@@ -1313,43 +2581,105 @@
 
         // Handle Summary Generation
         summaryBtn.addEventListener('click', async () => {
-             // ... (existing code for summary)
+            summaryContent.innerHTML = '<div class="loader inline-block"></div><p class="ml-2 inline">Membuat ringkasan...</p>';
+            summaryModal.style.display = 'flex';
+
+            const summaryData = {
+                buildingInfo: appState.buildingInfo,
+                findings: appState.geminiResults
+            };
+
+            const prompt = `
+                Buat ringkasan eksekutif dari data kajian SLF berikut. Fokus pada temuan paling kritis dan rekomendasi utama.
+                Data: ${JSON.stringify(summaryData, null, 2)}
+            `;
+
+            const summaryText = await callAI(prompt);
+            summaryContent.innerHTML = summaryText.replace(/\n/g, '<br>');
         });
 
         closeSummaryBtn.addEventListener('click', () => {
             summaryModal.style.display = 'none';
         });
 
-        // Handle Export
+        // --- FIXED: JSON EXPORT/IMPORT LOGIC ---
+
+        // Handle Export Data to JSON file
         exportBtn.addEventListener('click', () => {
-             // ... (existing code for export)
+            try {
+                // Ensure the state is saved before exporting
+                saveState();
+                const dataStr = JSON.stringify(appState, null, 2); // Pretty print JSON
+                const blob = new Blob([dataStr], {type: "application/json;charset=utf-8"});
+                const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'data-kajian';
+                saveAs(blob, `${buildingName}-slf.json`);
+            } catch (error) {
+                console.error("Error exporting data:", error);
+                showToast("Gagal mengekspor data.", true);
+            }
         });
 
-        // Handle Import
+        // Handle Trigger for Import File Dialog
         importBtn.addEventListener('click', () => {
             importFile.click();
         });
 
+        // Handle Import Data from JSON file
         importFile.addEventListener('change', (event) => {
-             // ... (existing code for import)
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const text = e.target.result;
+                    const importedState = JSON.parse(text);
+
+                    // Basic validation
+                    if (typeof importedState !== 'object' || importedState === null) {
+                        throw new Error("File JSON tidak valid atau kosong.");
+                    }
+                    
+                    // Load the imported state and re-render the application
+                    loadState(importedState);
+                    saveState(); // Save the newly imported state to localStorage
+                    init(); // Re-initialize the whole app with the new state
+
+                    showToast("Data berhasil diimpor!");
+
+                } catch (error) {
+                    console.error("Error importing file:", error);
+                    showToast(`Gagal mengimpor file: ${error.message}`, true);
+                } finally {
+                    // Reset file input to allow importing the same file again
+                    event.target.value = '';
+                }
+            };
+            reader.onerror = () => {
+                showToast("Gagal membaca file.", true);
+            };
+            reader.readAsText(file);
         });
 
-        // --- NEW: REPORT GENERATION LISTENERS ---
+        // --- REPORT GENERATION LISTENERS ---
         savePdfBtn.addEventListener('click', async () => {
             let reportContainer;
-            if (activeCategory === 'laporan_komprehensif') {
-                reportContainer = document.getElementById('report-preview');
+            if (activeCategory === 'laporan_komprehensif' || activeCategory === 'daftar_simak') {
+                reportContainer = document.getElementById('content-container');
                 if (!reportContainer || reportContainer.innerHTML.trim() === '') {
-                    alert('Silakan generate laporan terlebih dahulu sebelum menyimpan.');
+                    showToast('Silakan generate laporan terlebih dahulu sebelum menyimpan.', true);
                     return;
                 }
             } else {
                 const reportHTML = generateReportHTML();
                 reportContainer = document.createElement('div');
                 reportContainer.innerHTML = reportHTML;
+                // Style for off-screen rendering
                 reportContainer.style.position = 'absolute';
                 reportContainer.style.left = '-9999px';
-                reportContainer.style.width = '800px';
+                reportContainer.style.width = '800px'; // A4-like width
                 document.body.appendChild(reportContainer);
             }
 
@@ -1359,40 +2689,50 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'pt', 'a4');
             
-            await html2canvas(reportContainer, { scale: 2 }).then(canvas => {
+            try {
+                const canvas = await html2canvas(reportContainer, { 
+                    scale: 2,
+                    useCORS: true, // Important for external images
+                    logging: false
+                });
+
                 const imgData = canvas.toDataURL('image/png');
                 const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfWidth = pdf.internal.pageSize.getWidth() - 80; // with margin
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                 let heightLeft = pdfHeight;
                 let position = 0;
 
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                heightLeft -= pdf.internal.pageSize.getHeight();
+                pdf.addImage(imgData, 'PNG', 40, position + 40, pdfWidth, pdfHeight);
+                heightLeft -= (pdf.internal.pageSize.getHeight() - 80);
 
                 while (heightLeft >= 0) {
                     position = heightLeft - pdfHeight;
                     pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                    heightLeft -= pdf.internal.pageSize.getHeight();
+                    pdf.addImage(imgData, 'PNG', 40, position + 40, pdfWidth, pdfHeight);
+                    heightLeft -= (pdf.internal.pageSize.getHeight() - 80);
                 }
                 const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'laporan-slf';
                 pdf.save(`${buildingName}.pdf`);
-            });
 
-            if (activeCategory !== 'laporan_komprehensif') {
-                 document.body.removeChild(reportContainer);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showToast("Gagal membuat PDF. Coba lagi.", true);
+            } finally {
+                if (activeCategory !== 'laporan_komprehensif' && activeCategory !== 'daftar_simak' && reportContainer.parentNode) {
+                     document.body.removeChild(reportContainer);
+                }
+                savePdfBtn.disabled = false;
+                savePdfBtn.innerHTML = 'Simpan PDF';
             }
-            savePdfBtn.disabled = false;
-            savePdfBtn.innerHTML = 'Simpan PDF';
         });
 
         saveDocxBtn.addEventListener('click', () => {
             let reportHTML;
-            if (activeCategory === 'laporan_komprehensif') {
-                const reportContainer = document.getElementById('report-preview');
-                if (!reportContainer || reportContainer.innerHTML.trim() === '') {
-                    alert('Silakan generate laporan terlebih dahulu sebelum menyimpan.');
+             if (activeCategory === 'laporan_komprehensif' || activeCategory === 'daftar_simak') {
+                const reportContainer = document.getElementById('content-container');
+                 if (!reportContainer || reportContainer.innerHTML.trim() === '') {
+                    showToast('Tidak ada konten untuk disimpan.', true);
                     return;
                 }
                 reportHTML = reportContainer.innerHTML;
@@ -1404,9 +2744,15 @@
             saveDocxBtn.innerHTML = '<div class="loader"></div> Membuat DOCX...';
             
             const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${reportHTML}</body></html>`;
-            const converted = htmlDocx.asBlob(fullHtml);
-            const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'laporan-slf';
-            saveAs(converted, `${buildingName}.docx`);
+            
+            try {
+                const converted = htmlDocx.asBlob(fullHtml);
+                const buildingName = appState.buildingInfo['db-1']?.replace(/\s+/g, '-') || 'laporan-slf';
+                saveAs(converted, `${buildingName}.docx`);
+            } catch(error) {
+                console.error("Error generating DOCX:", error);
+                showToast("Gagal membuat file DOCX.", true);
+            }
 
             saveDocxBtn.disabled = false;
             saveDocxBtn.innerHTML = 'Simpan DOCX';
@@ -1415,7 +2761,7 @@
 
         // --- INITIALIZATION ---
         function init() {
-            loadState();
+            loadState(); // Load from localStorage on startup
             renderNav();
             renderContent();
         }
